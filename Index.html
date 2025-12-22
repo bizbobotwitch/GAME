@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Strike: P2P</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #050510; font-family: 'Orbitron', sans-serif; color: white; touch-action: none; }
+        canvas { display: block; }
+        
+        #overlay { position: absolute; inset: 0; background: rgba(5, 5, 20, 0.95); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .menu { background: rgba(20, 20, 40, 0.9); padding: 30px; border: 2px solid #00f2ff; text-align: center; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2); }
+        
+        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #333; cursor: pointer; border-radius: 8px; font-size: 12px; }
+        .tab.active { border-color: #00f2ff; background: rgba(0, 242, 255, 0.1); }
+        
+        .panel { display: none; flex-direction: column; gap: 15px; }
+        .panel.active { display: flex; }
+        
+        input, textarea { background: #000; border: 1px solid #bc13fe; color: #00f2ff; padding: 12px; font-family: monospace; font-size: 12px; border-radius: 8px; resize: none; }
+        button { padding: 15px; background: linear-gradient(45deg, #00f2ff, #bc13fe); border: none; color: white; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        button:disabled { opacity: 0.3; cursor: wait; }
+        
+        #hud { position: absolute; top: 20px; width: 100%; display: none; justify-content: space-around; pointer-events: none; }
+        .stat { text-shadow: 0 0 10px currentColor; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="overlay">
+    <div class="menu">
+        <h1 style="letter-spacing: 5px;">NEON STRIKE</h1>
+        <div id="loading-msg">Initializing Neural Link...</div>
+        
+        <div id="ui-core" style="display:none;">
+            <div class="tab-container">
+                <div class="tab active" onclick="switchTab('host')">HOST MISSION</div>
+                <div class="tab" onclick="switchTab('join')">JOIN MISSION</div>
+            </div>
+
+            <div id="host-panel" class="panel active">
+                <p style="font-size: 11px; color: #888;">Generate an Offer Key and send it to your wingman.</p>
+                <button id="btn-create-offer">GENERATE OFFER KEY</button>
+                <textarea id="output-key" rows="4" readonly placeholder="Key will appear here..."></textarea>
+                <button id="btn-copy" style="display:none; padding: 8px; font-size: 10px;">COPY KEY</button>
+                <div id="host-status" style="font-size: 12px; color: #00f2ff;"></div>
+            </div>
+
+            <div id="join-panel" class="panel">
+                <p style="font-size: 11px; color: #888;">Paste the Offer Key from your host pilot.</p>
+                <textarea id="input-key" rows="4" placeholder="Paste Key here..."></textarea>
+                <button id="btn-connect">ESTABLISH LINK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="hud">
+    <div id="hp" class="stat" style="color:#ff007f;">♥♥♥</div>
+    <div id="score" class="stat" style="color:#00f2ff;">SCORE: 0</div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const uiCore = document.getElementById('ui-core');
+    const loadingMsg = document.getElementById('loading-msg');
+    
+    let db, auth, user, appId;
+    let gameActive = false;
+    let myPlane = { x: 0.5, hp: 3, score: 0, bullets: [] };
+    let peerPlane = { x: 0.5, hp: 3, bullets: [] };
+    let currentDocRef = null;
+
+    // --- FIREBASE INIT ---
+    const checkInit = setInterval(() => {
+        if (typeof __firebase_config !== 'undefined') {
+            clearInterval(checkInit);
+            const config = JSON.parse(__firebase_config);
+            const app = initializeApp(config);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'p2p-neon';
+            
+            signInAnonymously(auth).then(() => {
+                onAuthStateChanged(auth, (u) => {
+                    if (u) {
+                        user = u;
+                        loadingMsg.style.display = 'none';
+                        uiCore.style.display = 'block';
+                    }
+                });
+            });
+        }
+    }, 500);
+
+    // --- P2P SIGNALING LOGIC ---
+    window.switchTab = (type) => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.tab[onclick="switchTab('${type}')"]`).classList.add('active');
+        document.getElementById(`${type}-panel`).classList.add('active');
+    };
+
+    document.getElementById('btn-create-offer').onclick = async () => {
+        const btn = document.getElementById('btn-create-offer');
+        btn.disabled = true;
+        btn.innerText = "GENERATING...";
+        
+        const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'p2p_sessions'), {
+            hostId: user.uid,
+            status: 'waiting',
+            ts: Date.now()
+        });
+        
+        currentDocRef = docRef;
+        const offerKey = btoa(docRef.id); // Encoded doc ID as the "Link Key"
+        document.getElementById('output-key').value = offerKey;
+        document.getElementById('btn-copy').style.display = 'block';
+        
+        // Listen for joiner
+        onSnapshot(docRef, (snap) => {
+            const data = snap.data();
+            if (data.status === 'connected') {
+                startCombat();
+            }
+        });
+    };
+
+    document.getElementById('btn-copy').onclick = () => {
+        const copyText = document.getElementById("output-key");
+        copyText.select();
+        document.execCommand("copy");
+        document.getElementById('btn-copy').innerText = "COPIED!";
+    };
+
+    document.getElementById('btn-connect').onclick = async () => {
+        const key = document.getElementById('input-key').value.trim();
+        if (!key) return;
+        
+        try {
+            const docId = atob(key);
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'p2p_sessions', docId);
+            await setDoc(docRef, { status: 'connected', joinerId: user.uid }, { merge: true });
+            currentDocRef = docRef;
+            startCombat();
+        } catch (e) {
+            alert("Invalid Key Format");
+        }
+    };
+
+    function startCombat() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('hud').style.display = 'flex';
+        gameActive = true;
+
+        // Data Sync Loop
+        setInterval(() => {
+            if (gameActive && currentDocRef) {
+                const myDataKey = user.uid === auth.currentUser.uid ? 'p1' : 'p2'; // Simplified toggle logic for demo
+                // In a real 2-player scenario, we track based on who is host vs joiner
+                setDoc(currentDocRef, {
+                    [user.uid]: {
+                        x: myPlane.x,
+                        hp: myPlane.hp,
+                        bullets: myPlane.bullets.map(b => ({x:b.x, y:b.y})),
+                        ts: Date.now()
+                    }
+                }, { merge: true });
+            }
+        }, 100);
+
+        onSnapshot(currentDocRef, (snap) => {
+            const data = snap.data();
+            Object.keys(data).forEach(key => {
+                if (key !== user.uid && typeof data[key] === 'object') {
+                    peerPlane = data[key];
+                }
+            });
+        });
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // --- GAMEPLAY ---
+    window.addEventListener('mousemove', (e) => { myPlane.x = e.clientX / canvas.width; });
+    window.addEventListener('touchmove', (e) => { myPlane.x = e.touches[0].clientX / canvas.width; });
+    window.addEventListener('mousedown', () => { if(myPlane.hp > 0) myPlane.bullets.push({x: myPlane.x, y: 0.85}); });
+
+    function gameLoop() {
+        if (!gameActive) return;
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // My Bullets
+        ctx.fillStyle = '#00f2ff';
+        myPlane.bullets.forEach((b, i) => {
+            b.y -= 0.02;
+            ctx.fillRect(b.x * canvas.width - 2, b.y * canvas.height, 4, 15);
+            if (b.y < 0) myPlane.bullets.splice(i, 1);
+            
+            // Hit Enemy
+            if (Math.abs(b.x - peerPlane.x) < 0.05 && b.y < 0.25 && b.y > 0.15) {
+                myPlane.score += 10;
+                myPlane.bullets.splice(i, 1);
+            }
+        });
+
+        // Draw My Plane
+        drawPlane(myPlane.x * canvas.width, canvas.height * 0.85, '#00f2ff', true);
+
+        // Draw Enemy (Peer)
+        if (peerPlane && peerPlane.ts) {
+            drawPlane(peerPlane.x * canvas.width, canvas.height * 0.15, '#ff007f', false);
+            
+            // Peer Bullets
+            ctx.fillStyle = '#ff007f';
+            if (peerPlane.bullets) {
+                peerPlane.bullets.forEach(pb => {
+                    const py = (1 - pb.y); // Flip coordinate for local view
+                    ctx.fillRect(pb.x * canvas.width - 2, py * canvas.height, 4, 15);
+                    if (Math.abs(pb.x - myPlane.x) < 0.05 && py > 0.83 && py < 0.87) {
+                        myPlane.hp -= 0.01; // Slow drain for collision
+                    }
+                });
+            }
+        }
+
+        document.getElementById('hp').innerText = '♥'.repeat(Math.ceil(myPlane.hp));
+        document.getElementById('score').innerText = `SCORE: ${myPlane.score}`;
+        requestAnimationFrame(gameLoop);
+    }
+
+    function drawPlane(x, y, color, isUp) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 10; ctx.shadowColor = color;
+        ctx.beginPath();
+        const d = isUp ? -1 : 1;
+        ctx.moveTo(x, y + (20 * d));
+        ctx.lineTo(x - 20, y - (10 * d));
+        ctx.lineTo(x + 20, y - (10 * d));
+        ctx.closePath();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
+
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+</script>
+</body>
+</html>
