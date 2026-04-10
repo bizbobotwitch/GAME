@@ -37,6 +37,13 @@
             color: #aaaaaa;
             margin-top: 8px;
         }
+        .section-title {
+            font-size: 1.8rem;
+            margin: 40px 0 20px 0;
+            color: #00ff88;
+            border-bottom: 2px solid rgba(0,255,136,0.3);
+            padding-bottom: 10px;
+        }
         .github-link {
             display: inline-block;
             margin-top: 20px;
@@ -53,17 +60,18 @@
             color: #000;
             transform: translateY(-3px);
         }
-        .release-card {
+        .release-card, .web-card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
             padding: 35px;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(12px);
+            margin-bottom: 30px;
         }
         .loading { text-align: center; padding: 50px; color: #888; font-size: 1.1rem; }
         .error { color: #ff5555; text-align: center; padding: 30px; }
 
-        .download-item {
+        .download-item, .web-game-item {
             display: flex;
             align-items: center;
             gap: 20px;
@@ -74,11 +82,10 @@
             margin-bottom: 16px;
             transition: all 0.3s ease;
         }
-        .download-item:hover {
+        .download-item:hover, .web-game-item:hover {
             background: #00ff88;
             color: #000;
             transform: translateX(10px);
-            box-shadow: 0 15px 30px rgba(0,255,136,0.25);
         }
         .thumbnail {
             width: 90px;
@@ -103,7 +110,7 @@
         .info {
             flex: 1;
         }
-        .filename {
+        .filename, .web-title {
             font-family: monospace;
             font-size: 1.15rem;
             font-weight: 500;
@@ -112,6 +119,15 @@
         .size {
             color: #888;
             font-size: 0.95rem;
+        }
+        .play-btn {
+            background: #00ff88;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
         }
         .new-badge {
             position: absolute;
@@ -123,14 +139,12 @@
             font-weight: 700;
             padding: 2px 10px;
             border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(255,0,170,0.5);
             animation: pulse 2s infinite;
         }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.15); }
         }
-        .relative { position: relative; }
         footer {
             text-align: center;
             margin-top: 80px;
@@ -143,12 +157,20 @@
     <div class="container">
         <header>
             <h1>KV GAMES</h1>
-            <p class="subtitle">List of Games — Live from GitHub</p>
+            <p class="subtitle">Play & Download — Live from GitHub</p>
             <a href="https://github.com/bizbobotwitch/GAME" target="_blank" class="github-link">
                 View Repository on GitHub
             </a>
         </header>
 
+        <!-- === WEB GAMES SECTION === -->
+        <h2 class="section-title">🌐 Web Games (Play in Browser)</h2>
+        <div class="web-card">
+            <div id="web-games-list"></div>
+        </div>
+
+        <!-- === DOWNLOADABLE GAMES SECTION === -->
+        <h2 class="section-title">⬇️ Downloadable Games</h2>
         <div class="release-card">
             <div id="status" class="loading">Loading latest games from GitHub...</div>
             <div id="download-list"></div>
@@ -162,6 +184,53 @@
     </div>
 
     <script>
+        // ==================== WEB GAMES (Add your browser games here) ====================
+        const webGames = [
+            {
+                title: "Example Snake Game",
+                url: "https://your-username.github.io/snake-game",   // Change this to your actual web game URL
+                thumb: "https://via.placeholder.com/90x90/00ff88/000000?text=Snake", // optional thumbnail
+                description: "Classic snake game"
+            },
+            // Add more web games here like this:
+            // {
+            //     title: "Flappy Bird Clone",
+            //     url: "https://bizbobotwitch.github.io/flappy",
+            //     thumb: "", 
+            //     description: "Flappy bird style game"
+            // }
+        ];
+
+        function renderWebGames() {
+            const container = document.getElementById('web-games-list');
+            container.innerHTML = '';
+
+            if (webGames.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#888;">No web games added yet.</p>`;
+                return;
+            }
+
+            webGames.forEach(game => {
+                const item = document.createElement('div');
+                item.className = 'web-game-item';
+
+                const thumbHTML = game.thumb 
+                    ? `<img src="${game.thumb}" class="thumbnail" alt="Preview">`
+                    : `<div class="no-thumb">🌐</div>`;
+
+                item.innerHTML = `
+                    ${thumbHTML}
+                    <div class="info">
+                        <div class="web-title">${game.title}</div>
+                        <div class="size">${game.description}</div>
+                    </div>
+                    <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ==================== DOWNLOADABLE GAMES FROM GITHUB ====================
         const owner = "bizbobotwitch";
         const repo = "GAME";
         const tag = "Games";
@@ -173,7 +242,7 @@
             const uploaded = new Date(dateStr);
             const now = new Date();
             const diffDays = (now - uploaded) / (1000 * 60 * 60 * 24);
-            return diffDays < 7;   // "NEW!" if uploaded in last 7 days
+            return diffDays < 7;
         }
 
         async function fetchGames() {
@@ -185,18 +254,16 @@
                 statusEl.style.display = 'none';
 
                 if (!release.assets || release.assets.length === 0) {
-                    listEl.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No game files found yet.</p>`;
+                    listEl.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No downloadable games found yet.</p>`;
                     return;
                 }
 
-                // Separate PNG images and other files
                 const images = {};
                 const games = [];
 
                 release.assets.forEach(asset => {
                     const lowerName = asset.name.toLowerCase();
-                    if (lowerName.endsWith('.png')) {
-                        // Try to match image to game name (remove extension and compare)
+                    if (lowerName.endsWith('.png') || lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
                         const baseName = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
                         images[baseName] = asset.browser_download_url;
                     } else {
@@ -204,14 +271,13 @@
                     }
                 });
 
-                // Sort games by name
                 games.sort((a, b) => a.name.localeCompare(b.name));
 
                 listEl.innerHTML = '';
 
                 games.forEach(asset => {
                     const item = document.createElement('div');
-                    item.className = 'download-item relative';
+                    item.className = 'download-item';
 
                     const lowerBase = asset.name.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
                     const thumbUrl = images[lowerBase] || null;
@@ -219,20 +285,16 @@
                     const sizeMB = (asset.size / (1024 * 1024)).toFixed(2);
                     const isNewGame = isNew(asset.updated_at || asset.created_at);
 
-                    let html = '';
-
-                    if (thumbUrl) {
-                        html += `<img src="${thumbUrl}" class="thumbnail" alt="Preview">`;
-                    } else {
-                        html += `<div class="no-thumb">🎮</div>`;
-                    }
+                    let html = thumbUrl 
+                        ? `<img src="${thumbUrl}" class="thumbnail" alt="Preview">` 
+                        : `<div class="no-thumb">🎮</div>`;
 
                     html += `
                         <div class="info">
                             <div class="filename">${asset.name}</div>
                             <div class="size">${sizeMB} MB • ${asset.download_count} downloads</div>
                         </div>
-                        <a href="${asset.browser_download_url}" target="_blank" 
+                        <a href="${asset.browser_download_url}" target="_blank"
                            style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
                             Download
                         </a>
@@ -240,7 +302,6 @@
 
                     item.innerHTML = html;
 
-                    // Add NEW! badge if recently added
                     if (isNewGame) {
                         const badge = document.createElement('div');
                         badge.className = 'new-badge';
@@ -252,13 +313,16 @@
                 });
 
             } catch (err) {
-                console.error(err);
                 statusEl.className = 'error';
                 statusEl.innerHTML = `Could not load games.<br>Make sure the release tag "Games" exists.`;
             }
         }
 
-        window.onload = fetchGames;
+        // Initialize both sections
+        window.onload = () => {
+            renderWebGames();
+            fetchGames();
+        };
     </script>
 </body>
 </html>
