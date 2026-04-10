@@ -59,15 +59,16 @@
 
         .tabs {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border-bottom: 2px solid rgba(255,255,255,0.1);
         }
         .tab {
-            padding: 14px 30px;
+            padding: 14px 32px;
             font-size: 1.25rem;
             font-weight: 600;
             cursor: pointer;
             color: #aaa;
+            transition: all 0.3s;
         }
         .tab.active {
             color: #00ff88;
@@ -85,7 +86,7 @@
             color: #00b4ff;
             margin: 25px 0 12px 0;
         }
-        .download-item {
+        .download-item, .web-game-item {
             display: flex;
             align-items: center;
             gap: 20px;
@@ -96,7 +97,7 @@
             margin-bottom: 14px;
             transition: all 0.3s;
         }
-        .download-item:hover {
+        .download-item:hover, .web-game-item:hover {
             background: #00ff88;
             color: #000;
             transform: translateX(8px);
@@ -112,9 +113,10 @@
             font-size: 2rem;
         }
         .info { flex: 1; }
-        .filename { font-size: 1.1rem; font-weight: 500; margin-bottom: 4px; font-family: monospace; }
+        .filename, .web-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 4px; font-family: monospace; }
         .size { color: #888; font-size: 0.9rem; }
 
+        /* Sidebar */
         .sidebar-card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
@@ -173,20 +175,26 @@
         </header>
 
         <div class="main-content">
-            <!-- Main Downloads Section -->
+            <!-- Main Content -->
             <div class="downloads-section">
                 <div class="tabs">
                     <div class="tab active" onclick="switchTab(0)">⬇️ Downloadable Games</div>
                     <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
                 </div>
 
+                <!-- Downloadable Games -->
                 <div id="download-section" class="card">
                     <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games from GitHub...</div>
                     <div id="download-list"></div>
                 </div>
+
+                <!-- Web Games -->
+                <div id="web-section" class="card" style="display: none;">
+                    <div id="web-games-list"></div>
+                </div>
             </div>
 
-            <!-- Sidebar: Try This Game -->
+            <!-- Sidebar: Try This Game (Random from all games) -->
             <div class="sidebar">
                 <div class="sidebar-card">
                     <div class="try-title">🎲 Try This Game?</div>
@@ -202,131 +210,151 @@
     </div>
 
     <script>
-        // Web Games (Only Piggy Escape for now)
+        // Web Games
+        let allGames = [];
+
         const webGames = [
             { 
                 title: "Piggy Escape", 
                 url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", 
-                description: "Classic logic puzzle - Block the pig from escaping!" 
+                description: "Block the pig from escaping!",
+                type: "web"
+            },
+            { 
+                title: "Core Ball", 
+                url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", 
+                description: "Fun ball bouncing challenge",
+                type: "web"
+            },
+            { 
+                title: "CircleoO", 
+                url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", 
+                description: "Addictive circle puzzle game",
+                type: "web"
             }
         ];
 
-        // Show random game in sidebar (currently only one, but works for multiple)
-        function showRandomGame() {
-            const container = document.getElementById('random-game');
-            const game = webGames[Math.floor(Math.random() * webGames.length)];
+        // Render Web Games Tab
+        function renderWebGames() {
+            const container = document.getElementById('web-games-list');
+            container.innerHTML = '<h2 style="margin-top:0; color:#00ff88;">🌐 Web Games (Play Instantly)</h2>';
 
-            container.innerHTML = `
-                <div class="no-thumb">🐷</div>
-                <div style="font-size:1.3rem; font-weight:600; margin-bottom:8px;">${game.title}</div>
-                <div style="color:#aaa; margin-bottom:15px;">${game.description}</div>
-                <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
-            `;
+            webGames.forEach(game => {
+                const item = document.createElement('div');
+                item.className = 'web-game-item';
+                item.innerHTML = `
+                    <div class="no-thumb">🌐</div>
+                    <div class="info">
+                        <div class="web-title">${game.title}</div>
+                        <div class="size">${game.description}</div>
+                    </div>
+                    <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
+                `;
+                container.appendChild(item);
+            });
         }
 
-        // Downloadable Games with folder support
-        const owner = "bizbobotwitch";
-        const repo = "GAME";
-        const tag = "Games";
-
-        function isNew(dateStr) {
-            const diffDays = (Date.now() - new Date(dateStr)) / (1000 * 60 * 60 * 24);
-            return diffDays < 7;
-        }
-
+        // Fetch Downloadable Games and combine with web games for random selection
         async function fetchGames() {
             const status = document.getElementById('status');
             const list = document.getElementById('download-list');
 
             try {
-                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`);
+                const res = await fetch(`https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games`);
                 if (!res.ok) throw new Error();
 
                 const release = await res.json();
                 status.style.display = 'none';
 
-                if (!release.assets || release.assets.length === 0) {
-                    list.innerHTML = `<p style="text-align:center; color:#888;">No downloadable games found yet.</p>`;
-                    return;
+                const downloadable = [];
+
+                if (release.assets && release.assets.length > 0) {
+                    release.assets.forEach(asset => {
+                        const lower = asset.name.toLowerCase();
+                        if (!lower.endsWith('.png') && !lower.endsWith('.jpg') && !lower.endsWith('.jpeg')) {
+                            const displayName = asset.name.split('/').pop();
+                            downloadable.push({
+                                title: displayName,
+                                url: asset.browser_download_url,
+                                description: (asset.size / (1024*1024)).toFixed(1) + " MB",
+                                type: "download"
+                            });
+                        }
+                    });
                 }
 
-                const images = {};
-                const games = [];
+                // Combine all games for random selection
+                allGames = [...webGames, ...downloadable];
 
-                release.assets.forEach(asset => {
-                    const lower = asset.name.toLowerCase();
-                    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
-                        const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
-                        images[base] = asset.browser_download_url;
-                    } else {
-                        games.push(asset);
-                    }
-                });
-
-                const grouped = {};
-                games.forEach(asset => {
-                    const parts = asset.name.split('/');
-                    const folder = parts.length > 1 ? parts[0] : "Other Games";
-                    const fileName = parts[parts.length - 1];
-
-                    if (!grouped[folder]) grouped[folder] = [];
-                    grouped[folder].push({ ...asset, displayName: fileName });
-                });
-
+                // Render downloadable games with folders
                 list.innerHTML = '';
 
-                Object.keys(grouped).sort().forEach(folder => {
-                    const folderDiv = document.createElement('div');
-                    folderDiv.innerHTML = `<div class="folder-title">📁 ${folder}</div>`;
-                    list.appendChild(folderDiv);
-
-                    grouped[folder].sort((a,b) => a.displayName.localeCompare(b.displayName));
-
-                    grouped[folder].forEach(asset => {
+                if (downloadable.length === 0) {
+                    list.innerHTML = `<p style="text-align:center; color:#888;">No downloadable games found yet.</p>`;
+                } else {
+                    // Simple list for now (you can add folder grouping later if needed)
+                    downloadable.forEach(game => {
                         const item = document.createElement('div');
                         item.className = 'download-item';
-                        item.style.position = 'relative';
-
-                        const base = asset.displayName.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
-                        const thumb = images[base] || null;
-
-                        const sizeMB = (asset.size / 1024 / 1024).toFixed(2);
-                        const newBadge = isNew(asset.updated_at) ? `<div class="new-badge">NEW!</div>` : '';
-
-                        let html = thumb 
-                            ? `<img src="${thumb}" class="thumbnail">` 
-                            : `<div class="no-thumb">🎮</div>`;
-
-                        html += `
+                        item.innerHTML = `
+                            <div class="no-thumb">🎮</div>
                             <div class="info">
-                                <div class="filename">${asset.displayName}</div>
-                                <div class="size">${sizeMB} MB • ${asset.download_count} downloads</div>
+                                <div class="filename">${game.title}</div>
+                                <div class="size">${game.description} • Download</div>
                             </div>
-                            <a href="${asset.browser_download_url}" target="_blank" class="download-btn" 
+                            <a href="${game.url}" target="_blank" 
                                style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
                                 Download
                             </a>
                         `;
-
-                        item.innerHTML = html + newBadge;
                         list.appendChild(item);
                     });
-                });
+                }
 
             } catch (e) {
-                status.innerHTML = `Failed to load games.<br>Make sure the release tag "Games" exists.`;
+                status.innerHTML = `Failed to load downloadable games.<br>Make sure the release tag "Games" exists.`;
             }
+        }
+
+        // Show a completely random game from all available games
+        function showRandomGame() {
+            const container = document.getElementById('random-game');
+            
+            if (allGames.length === 0) {
+                container.innerHTML = `<p style="color:#888;">Loading games...</p>`;
+                return;
+            }
+
+            const randomGame = allGames[Math.floor(Math.random() * allGames.length)];
+
+            container.innerHTML = `
+                <div class="no-thumb">${randomGame.type === "web" ? "🌐" : "⬇️"}</div>
+                <div style="font-size:1.3rem; font-weight:600; margin:10px 0;">${randomGame.title}</div>
+                <div style="color:#aaa; margin-bottom:15px;">${randomGame.description}</div>
+                <a href="${randomGame.url}" target="_blank" class="play-btn">
+                    ${randomGame.type === "web" ? "Play Now" : "Download"}
+                </a>
+            `;
         }
 
         function switchTab(n) {
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
-            // For now we only have one main section, but kept the function for future
+            
+            if (n === 0) {
+                document.getElementById('download-section').style.display = 'block';
+                document.getElementById('web-section').style.display = 'none';
+            } else {
+                document.getElementById('download-section').style.display = 'none';
+                document.getElementById('web-section').style.display = 'block';
+            }
         }
 
-        // Initialize - Start with Downloads + Random Game
+        // Initialize
         window.onload = () => {
             fetchGames();
-            showRandomGame();
+            renderWebGames();
+            // Show random game after a short delay so downloadable games can load
+            setTimeout(showRandomGame, 800);
         };
     </script>
 </body>
