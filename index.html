@@ -54,14 +54,8 @@
             gap: 30px;
             flex-wrap: wrap;
         }
-        .downloads-section {
-            flex: 1;
-            min-width: 300px;
-        }
-        .sidebar {
-            width: 320px;
-            min-width: 280px;
-        }
+        .downloads-section { flex: 1; min-width: 300px; }
+        .sidebar { width: 320px; min-width: 280px; }
 
         .tabs {
             display: flex;
@@ -74,7 +68,6 @@
             font-weight: 600;
             cursor: pointer;
             color: #aaa;
-            transition: all 0.3s;
         }
         .tab.active {
             color: #00ff88;
@@ -87,11 +80,7 @@
             padding: 30px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .folder-title {
-            font-size: 1.4rem;
-            color: #00b4ff;
-            margin: 25px 0 12px 0;
-        }
+
         .download-item, .web-game-item {
             display: flex;
             align-items: center;
@@ -108,21 +97,36 @@
             color: #000;
             transform: translateX(8px);
         }
-        .thumbnail, .no-thumb {
-            width: 80px; height: 80px; border-radius: 10px; flex-shrink: 0;
+
+        .thumbnail {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
         .no-thumb {
+            width: 90px;
+            height: 90px;
             background: #222;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 2.2rem;
+            flex-shrink: 0;
         }
+
         .info { flex: 1; }
-        .filename, .web-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 4px; font-family: monospace; }
+        .filename, .web-title { 
+            font-size: 1.12rem; 
+            font-weight: 500; 
+            margin-bottom: 4px; 
+            font-family: monospace; 
+        }
         .size { color: #888; font-size: 0.9rem; }
 
-        /* Sidebar */
         .sidebar-card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
@@ -141,10 +145,10 @@
             text-align: center;
         }
         .random-game .no-thumb {
-            width: 140px;
-            height: 140px;
-            font-size: 4rem;
-            margin-bottom: 15px;
+            width: 130px;
+            height: 130px;
+            font-size: 3.5rem;
+            margin-bottom: 12px;
         }
         .play-btn {
             background: #00ff88;
@@ -167,7 +171,6 @@
             text-align: center; 
             margin-top: 80px; 
             color: #666; 
-            font-size: 0.95rem; 
         }
     </style>
 </head>
@@ -182,7 +185,6 @@
         </header>
 
         <div class="main-content">
-            <!-- Main Content -->
             <div class="downloads-section">
                 <div class="tabs">
                     <div class="tab active" onclick="switchTab(0)">⬇️ Downloadable Games</div>
@@ -201,7 +203,7 @@
                 </div>
             </div>
 
-            <!-- Sidebar: Try This Game (Random from all) -->
+            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-card">
                     <div class="try-title">🎲 Try This Game?</div>
@@ -217,7 +219,6 @@
     </div>
 
     <script>
-        // Web Games
         let allGames = [];
 
         const webGames = [
@@ -225,19 +226,22 @@
                 title: "Piggy Escape", 
                 url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", 
                 description: "Block the pig from escaping!",
-                type: "web"
+                type: "web",
+                thumb: "🐷"
             },
             { 
                 title: "Core Ball", 
                 url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", 
                 description: "Fun ball bouncing challenge",
-                type: "web"
+                type: "web",
+                thumb: "⚽"
             },
             { 
                 title: "CircleoO", 
                 url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", 
                 description: "Addictive circle puzzle game",
-                type: "web"
+                type: "web",
+                thumb: "⭕"
             }
         ];
 
@@ -249,7 +253,7 @@
                 const item = document.createElement('div');
                 item.className = 'web-game-item';
                 item.innerHTML = `
-                    <div class="no-thumb">🌐</div>
+                    <div class="no-thumb">${game.thumb}</div>
                     <div class="info">
                         <div class="web-title">${game.title}</div>
                         <div class="size">${game.description}</div>
@@ -271,35 +275,51 @@
                 const release = await res.json();
                 status.style.display = 'none';
 
+                const images = {};
                 const downloadable = [];
 
-                if (release.assets && release.assets.length > 0) {
-                    release.assets.forEach(asset => {
-                        const lower = asset.name.toLowerCase();
-                        if (!lower.endsWith('.png') && !lower.endsWith('.jpg') && !lower.endsWith('.jpeg')) {
-                            const displayName = asset.name.split('/').pop();
-                            downloadable.push({
-                                title: displayName,
-                                url: asset.browser_download_url,
-                                description: (asset.size / (1024*1024)).toFixed(1) + " MB",
-                                type: "download"
-                            });
-                        }
-                    });
-                }
+                // Collect thumbnails and games
+                release.assets.forEach(asset => {
+                    const lower = asset.name.toLowerCase();
+                    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+                        const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
+                        images[base] = asset.browser_download_url;
+                    } else {
+                        const displayName = asset.name.split('/').pop();
+                        downloadable.push({
+                            title: displayName,
+                            url: asset.browser_download_url,
+                            description: (asset.size / (1024*1024)).toFixed(1) + " MB",
+                            type: "download",
+                            thumbUrl: null
+                        });
+                    }
+                });
+
+                // Match thumbnails to games
+                downloadable.forEach(game => {
+                    const base = game.title.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
+                    if (images[base]) game.thumbUrl = images[base];
+                });
 
                 allGames = [...webGames, ...downloadable];
 
+                // Render downloadable games
                 list.innerHTML = '';
-
                 if (downloadable.length === 0) {
                     list.innerHTML = `<p style="text-align:center; color:#888;">No downloadable games found yet.</p>`;
                 } else {
                     downloadable.forEach(game => {
                         const item = document.createElement('div');
                         item.className = 'download-item';
+                        item.style.position = 'relative';
+
+                        const thumbHTML = game.thumbUrl 
+                            ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
+                            : `<div class="no-thumb">🎮</div>`;
+
                         item.innerHTML = `
-                            <div class="no-thumb">🎮</div>
+                            ${thumbHTML}
                             <div class="info">
                                 <div class="filename">${game.title}</div>
                                 <div class="size">${game.description}</div>
@@ -320,7 +340,6 @@
 
         function showRandomGame() {
             const container = document.getElementById('random-game');
-            
             if (allGames.length === 0) {
                 container.innerHTML = `<p style="color:#888;">Loading games...</p>`;
                 return;
@@ -328,9 +347,13 @@
 
             const randomGame = allGames[Math.floor(Math.random() * allGames.length)];
 
+            const thumbHTML = randomGame.thumbUrl 
+                ? `<img src="${randomGame.thumbUrl}" class="thumbnail" style="width:130px;height:130px;">` 
+                : `<div class="no-thumb">${randomGame.type === "web" ? randomGame.thumb || "🌐" : "🎮"}</div>`;
+
             container.innerHTML = `
-                <div class="no-thumb">${randomGame.type === "web" ? "🌐" : "⬇️"}</div>
-                <div style="font-size:1.3rem; font-weight:600; margin:10px 0;">${randomGame.title}</div>
+                ${thumbHTML}
+                <div style="font-size:1.3rem; font-weight:600; margin:12px 0;">${randomGame.title}</div>
                 <div style="color:#aaa; margin-bottom:15px;">${randomGame.description}</div>
                 <a href="${randomGame.url}" target="_blank" class="play-btn">
                     ${randomGame.type === "web" ? "Play Now" : "Download"}
@@ -340,21 +363,14 @@
 
         function switchTab(n) {
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
-            
-            if (n === 0) {
-                document.getElementById('download-section').style.display = 'block';
-                document.getElementById('web-section').style.display = 'none';
-            } else {
-                document.getElementById('download-section').style.display = 'none';
-                document.getElementById('web-section').style.display = 'block';
-            }
+            document.getElementById('download-section').style.display = (n === 0) ? 'block' : 'none';
+            document.getElementById('web-section').style.display = (n === 1) ? 'block' : 'none';
         }
 
-        // Initialize
         window.onload = () => {
             fetchGames();
             renderWebGames();
-            setTimeout(showRandomGame, 800);
+            setTimeout(showRandomGame, 1000);
         };
     </script>
 </body>
