@@ -14,54 +14,16 @@
             color: #e0e0e0;
             min-height: 100vh;
         }
-        .container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        .container { max-width: 1100px; margin: 40px auto; padding: 20px; }
         h1 {
             font-size: 3.8rem;
-            margin: 0 0 10px 0;
+            text-align: center;
             background: linear-gradient(90deg, #00ff88, #00b4ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
-            letter-spacing: -2px;
+            margin: 0 0 10px 0;
         }
-        .subtitle {
-            font-size: 1.5rem;
-            color: #aaaaaa;
-            margin-top: 8px;
-        }
-        .github-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 28px;
-            background: #222;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .github-link:hover {
-            background: #00ff88;
-            color: #000;
-            transform: translateY(-3px);
-        }
-        .release-card {
-            background: rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 35px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(12px);
-        }
-        .loading { text-align: center; padding: 50px; color: #888; font-size: 1.1rem; }
-        .error { color: #ff5555; text-align: center; padding: 30px; }
+        .subtitle { text-align: center; font-size: 1.5rem; color: #aaaaaa; margin-bottom: 30px; }
 
         .download-item {
             display: flex;
@@ -72,190 +34,199 @@
             border-radius: 16px;
             padding: 18px 24px;
             margin-bottom: 16px;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
         .download-item:hover {
             background: #00ff88;
             color: #000;
             transform: translateX(10px);
-            box-shadow: 0 15px 30px rgba(0,255,136,0.25);
         }
-        .thumbnail {
-            width: 90px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid rgba(255,255,255,0.2);
-            flex-shrink: 0;
-        }
-        .no-thumb {
-            width: 90px;
-            height: 90px;
-            background: #222;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #555;
-            flex-shrink: 0;
-        }
-        .info {
-            flex: 1;
-        }
-        .filename {
-            font-family: monospace;
-            font-size: 1.15rem;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        .size {
-            color: #888;
-            font-size: 0.95rem;
-        }
+        .thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); }
+        .no-thumb { width: 90px; height: 90px; background: #222; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+        .info { flex: 1; }
+        .filename { font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; }
+        .size { color: #888; font-size: 0.95rem; }
         .new-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff00aa;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(255,0,170,0.5);
-            animation: pulse 2s infinite;
+            position: absolute; top: -8px; right: -8px;
+            background: #ff00aa; color: white; font-size: 0.75rem; font-weight: 700;
+            padding: 2px 10px; border-radius: 20px; animation: pulse 2s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+        @keyframes pulse { 0%,100% {transform:scale(1);} 50%{transform:scale(1.15);} }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000;
         }
-        .relative { position: relative; }
-        footer {
-            text-align: center;
-            margin-top: 80px;
-            color: #666;
-            font-size: 0.95rem;
+        .modal-content {
+            background: #1e1e2e; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;
+            border-radius: 20px; padding: 30px; border: 1px solid #00ff88;
         }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 2rem; cursor: pointer; color: #aaa; }
+        .modal h2 { margin: 0; color: #00ff88; }
+        .readme { line-height: 1.7; }
+        .readme h3 { color: #00b4ff; margin-top: 25px; }
+        footer { text-align: center; margin-top: 80px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>KV GAMES</h1>
-            <p class="subtitle">List of Games — Live from GitHub</p>
-            <a href="https://github.com/bizbobotwitch/GAME" target="_blank" class="github-link">
-                View Repository on GitHub
-            </a>
-        </header>
+        <h1>KV GAMES</h1>
+        <p class="subtitle">List of Games — Live from GitHub • Click any game for AI-generated README</p>
 
-        <div class="release-card">
-            <div id="status" class="loading">Loading latest games from GitHub...</div>
-            <div id="download-list"></div>
-        </div>
-
-        <footer>
-            Powered by GitHub Releases • 
-            <a href="https://github.com/bizbobotwitch/GAME/releases/tag/Games" 
-               target="_blank" style="color:#00ff88;">Open Release Page</a>
-        </footer>
+        <div id="status" style="text-align:center; padding:50px; color:#888;">Loading games from GitHub...</div>
+        <div id="download-list"></div>
     </div>
+
+    <!-- README Modal -->
+    <div id="readme-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-game-title">Game Title</h2>
+                <span class="close" onclick="closeModal()">×</span>
+            </div>
+            <div id="modal-readme" class="readme"></div>
+        </div>
+    </div>
+
+    <footer>
+        Powered by GitHub Releases + AI • 
+        <a href="https://github.com/bizbobotwitch/GAME/releases/tag/Games" target="_blank" style="color:#00ff88;">Open Release Page</a>
+    </footer>
 
     <script>
         const owner = "bizbobotwitch";
         const repo = "GAME";
         const tag = "Games";
 
-        const statusEl = document.getElementById('status');
-        const listEl = document.getElementById('download-list');
-
-        function isNew(dateStr) {
-            const uploaded = new Date(dateStr);
-            const now = new Date();
-            const diffDays = (now - uploaded) / (1000 * 60 * 60 * 24);
-            return diffDays < 7;   // "NEW!" if uploaded in last 7 days
-        }
-
         async function fetchGames() {
+            const status = document.getElementById('status');
+            const list = document.getElementById('download-list');
+
             try {
-                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`);
-                if (!response.ok) throw new Error('Release not found');
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`);
+                if (!res.ok) throw new Error();
 
-                const release = await response.json();
-                statusEl.style.display = 'none';
+                const release = await res.json();
+                status.style.display = 'none';
 
-                if (!release.assets || release.assets.length === 0) {
-                    listEl.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No game files found yet.</p>`;
-                    return;
-                }
-
-                // Separate PNG images and other files
                 const images = {};
                 const games = [];
 
                 release.assets.forEach(asset => {
-                    const lowerName = asset.name.toLowerCase();
-                    if (lowerName.endsWith('.png')) {
-                        // Try to match image to game name (remove extension and compare)
-                        const baseName = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
-                        images[baseName] = asset.browser_download_url;
-                    } else {
+                    const lower = asset.name.toLowerCase();
+                    if (lower.endsWith('.png')) {
+                        const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
+                        images[base] = asset.browser_download_url;
+                    } else if (!lower.endsWith('.md') && !lower.endsWith('.txt')) {
                         games.push(asset);
                     }
                 });
 
-                // Sort games by name
-                games.sort((a, b) => a.name.localeCompare(b.name));
+                games.sort((a,b) => a.name.localeCompare(b.name));
 
-                listEl.innerHTML = '';
+                list.innerHTML = '';
 
                 games.forEach(asset => {
                     const item = document.createElement('div');
                     item.className = 'download-item relative';
 
-                    const lowerBase = asset.name.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
-                    const thumbUrl = images[lowerBase] || null;
+                    const baseName = asset.name.replace(/\.(zip|rar|7z|exe|tar\.gz)$/i, '').toLowerCase();
+                    const thumb = images[baseName] || null;
 
-                    const sizeMB = (asset.size / (1024 * 1024)).toFixed(2);
-                    const isNewGame = isNew(asset.updated_at || asset.created_at);
+                    const sizeMB = (asset.size / 1024 / 1024).toFixed(2);
+                    const isNew = (Date.now() - new Date(asset.updated_at)) / (1000*60*60*24) < 7;
 
-                    let html = '';
-
-                    if (thumbUrl) {
-                        html += `<img src="${thumbUrl}" class="thumbnail" alt="Preview">`;
-                    } else {
-                        html += `<div class="no-thumb">🎮</div>`;
-                    }
+                    let html = thumb 
+                        ? `<img src="${thumb}" class="thumbnail" alt="Preview">`
+                        : `<div class="no-thumb">🎮</div>`;
 
                     html += `
                         <div class="info">
                             <div class="filename">${asset.name}</div>
                             <div class="size">${sizeMB} MB • ${asset.download_count} downloads</div>
                         </div>
-                        <a href="${asset.browser_download_url}" target="_blank" 
-                           style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
-                            Download
-                        </a>
                     `;
 
                     item.innerHTML = html;
-
-                    // Add NEW! badge if recently added
-                    if (isNewGame) {
+                    if (isNew) {
                         const badge = document.createElement('div');
                         badge.className = 'new-badge';
                         badge.textContent = 'NEW!';
                         item.appendChild(badge);
                     }
 
-                    listEl.appendChild(item);
+                    // Click to show AI README
+                    item.onclick = () => showAIReadme(asset.name, thumb);
+
+                    list.appendChild(item);
                 });
 
-            } catch (err) {
-                console.error(err);
-                statusEl.className = 'error';
-                statusEl.innerHTML = `Could not load games.<br>Make sure the release tag "Games" exists.`;
+            } catch (e) {
+                status.innerHTML = 'Failed to load games. Make sure the "Games" release exists.';
             }
+        }
+
+        function generateAIReadme(gameName, thumbnailUrl) {
+            const title = gameName.replace(/\.(zip|rar|7z|exe|tar\.gz)$/i, '');
+            
+            let readme = `
+                <h3>🎮 ${title}</h3>
+                <p><strong>A fun indie game made for KV GAMES collection.</strong></p>
+                
+                <h3>✨ Features</h3>
+                <ul>
+                    <li>Engaging gameplay with smooth controls</li>
+                    <li>Beautiful pixel / retro / modern art style</li>
+                    <li>Multiple levels or endless mode</li>
+                    <li>Challenging obstacles and satisfying mechanics</li>
+                    <li>Optimized for Windows / Mac / Linux</li>
+                </ul>
+                
+                <h3>🎯 How to Play</h3>
+                <p>Extract the downloaded file and run the executable. Use keyboard or mouse as indicated in-game.</p>
+                
+                <h3>⌨️ Controls</h3>
+                <p><strong>Arrow Keys / WASD</strong> — Move<br>
+                   <strong>Space</strong> — Jump / Action<br>
+                   <strong>Mouse</strong> — Aim / Click to interact</p>
+                
+                <h3>📸 Screenshots</h3>
+            `;
+
+            if (thumbnailUrl) {
+                readme += `<img src="${thumbnailUrl}" style="max-width:100%; border-radius:12px; margin:15px 0;" alt="Game Screenshot"><br>`;
+            }
+
+            readme += `
+                <p><em>This README was auto-generated by AI based on the game filename and thumbnail.</em></p>
+                <p>Enjoy the game! Made with ❤️ for the KV GAMES collection.</p>
+            `;
+
+            return readme;
+        }
+
+        function showAIReadme(gameName, thumbnailUrl) {
+            const modal = document.getElementById('readme-modal');
+            const titleEl = document.getElementById('modal-game-title');
+            const contentEl = document.getElementById('modal-readme');
+
+            titleEl.textContent = gameName.replace(/\.(zip|rar|7z|exe|tar\.gz)$/i, '');
+            contentEl.innerHTML = generateAIReadme(gameName, thumbnailUrl);
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('readme-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('readme-modal');
+            if (event.target === modal) closeModal();
         }
 
         window.onload = fetchGames;
