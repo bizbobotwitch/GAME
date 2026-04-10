@@ -14,8 +14,15 @@
             color: #e0e0e0;
             min-height: 100vh;
         }
-        .container { max-width: 1100px; margin: 40px auto; padding: 20px; }
-        header { text-align: center; margin-bottom: 30px; }
+        .container { 
+            max-width: 1200px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
         h1 {
             font-size: 3.8rem;
             background: linear-gradient(90deg, #00ff88, #00b4ff);
@@ -24,27 +31,6 @@
             font-weight: 700;
             letter-spacing: -2px;
         }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-        }
-        .tab {
-            padding: 14px 40px;
-            font-size: 1.3rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #aaa;
-            transition: all 0.3s;
-        }
-        .tab.active {
-            color: #00ff88;
-            border-bottom: 4px solid #00ff88;
-        }
-        .section { display: none; }
-        .section.active { display: block; }
-
         .github-link {
             display: inline-block;
             margin: 15px 0;
@@ -57,63 +43,124 @@
         }
         .github-link:hover { background: #00ff88; color: #000; }
 
+        .main-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .downloads-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        .sidebar {
+            width: 320px;
+            min-width: 280px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        .tab {
+            padding: 14px 30px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .tab.active {
+            color: #00ff88;
+            border-bottom: 4px solid #00ff88;
+        }
+
         .card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
-            padding: 35px;
+            padding: 30px;
             border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 30px;
         }
         .folder-title {
             font-size: 1.4rem;
             color: #00b4ff;
-            margin: 30px 0 15px 0;
+            margin: 25px 0 12px 0;
         }
-        .download-item, .web-game-item {
+        .download-item {
             display: flex;
             align-items: center;
             gap: 20px;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(0,255,136,0.3);
             border-radius: 16px;
-            padding: 18px 24px;
+            padding: 16px 22px;
             margin-bottom: 14px;
             transition: all 0.3s;
         }
-        .download-item:hover, .web-game-item:hover {
+        .download-item:hover {
             background: #00ff88;
             color: #000;
             transform: translateX(8px);
         }
         .thumbnail, .no-thumb {
-            width: 90px; height: 90px; border-radius: 10px; flex-shrink: 0;
+            width: 80px; height: 80px; border-radius: 10px; flex-shrink: 0;
         }
-        .thumbnail { object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
         .no-thumb {
             background: #222;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
+            font-size: 2rem;
         }
         .info { flex: 1; }
-        .filename, .web-title { font-size: 1.15rem; font-weight: 500; margin-bottom: 4px; font-family: monospace; }
-        .size { color: #888; font-size: 0.95rem; }
-        .play-btn, .download-btn {
+        .filename { font-size: 1.1rem; font-weight: 500; margin-bottom: 4px; font-family: monospace; }
+        .size { color: #888; font-size: 0.9rem; }
+
+        .sidebar-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(0,255,136,0.2);
+        }
+        .try-title {
+            color: #00ff88;
+            font-size: 1.35rem;
+            margin-bottom: 15px;
+        }
+        .random-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .random-game .no-thumb {
+            width: 140px;
+            height: 140px;
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        .play-btn {
             background: #00ff88;
             color: #000;
-            padding: 12px 26px;
+            padding: 14px 32px;
             border-radius: 50px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
+            margin-top: 10px;
         }
+
         .new-badge {
             position: absolute; top: -8px; right: -8px;
             background: #ff00aa; color: white; font-size: 0.75rem; font-weight: 700;
             padding: 3px 11px; border-radius: 20px; animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
-        footer { text-align: center; margin-top: 80px; color: #666; }
+
+        footer { 
+            text-align: center; 
+            margin-top: 80px; 
+            color: #666; 
+            font-size: 0.95rem; 
+        }
     </style>
 </head>
 <body>
@@ -125,24 +172,26 @@
             </a>
         </header>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab(0)">🌐 Web Games</div>
-            <div class="tab" onclick="switchTab(1)">⬇️ Downloadable Games</div>
-        </div>
+        <div class="main-content">
+            <!-- Main Downloads Section -->
+            <div class="downloads-section">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab(0)">⬇️ Downloadable Games</div>
+                    <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
+                </div>
 
-        <!-- Web Games Tab -->
-        <div id="web-tab" class="section active">
-            <div class="card">
-                <div id="web-games-list"></div>
+                <div id="download-section" class="card">
+                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games from GitHub...</div>
+                    <div id="download-list"></div>
+                </div>
             </div>
-        </div>
 
-        <!-- Downloadable Games Tab -->
-        <div id="download-tab" class="section">
-            <div class="card">
-                <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games from GitHub...</div>
-                <div id="download-list"></div>
+            <!-- Sidebar: Try This Game -->
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <div class="try-title">🎲 Try This Game?</div>
+                    <div id="random-game" class="random-game"></div>
+                </div>
             </div>
         </div>
 
@@ -153,40 +202,29 @@
     </div>
 
     <script>
-        // ====================== WEB GAMES ======================
+        // Web Games (Only Piggy Escape for now)
         const webGames = [
             { 
-                title: "Piggy Escape (Block the Pig)", 
+                title: "Piggy Escape", 
                 url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", 
-                description: "Logic puzzle – Block the pig from escaping!" 
-            },
-            { title: "Math Agar", url: "https://student-math.org/play/mathagar.html", description: "Math version of Agar.io" },
-            { title: "Math Slither", url: "https://student-math.org/play/math-slither.html", description: "Snake-style math game" },
-            { title: "Launch The Llama", url: "https://student-math.org/play/launch-the-llama.html", description: "Fun launching game" },
-            { title: "Cat Wars", url: "https://student-math.org/play/cat-wars.html", description: "Cat battle game" },
-            // Add more games here easily ↓
+                description: "Classic logic puzzle - Block the pig from escaping!" 
+            }
         ];
 
-        function renderWebGames() {
-            const container = document.getElementById('web-games-list');
-            container.innerHTML = '<h2 style="margin-top:0; color:#00ff88;">🌐 Web Games (Play Instantly)</h2>';
+        // Show random game in sidebar (currently only one, but works for multiple)
+        function showRandomGame() {
+            const container = document.getElementById('random-game');
+            const game = webGames[Math.floor(Math.random() * webGames.length)];
 
-            webGames.forEach(game => {
-                const item = document.createElement('div');
-                item.className = 'web-game-item';
-                item.innerHTML = `
-                    <div class="no-thumb">🌐</div>
-                    <div class="info">
-                        <div class="web-title">${game.title}</div>
-                        <div class="size">${game.description}</div>
-                    </div>
-                    <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
-                `;
-                container.appendChild(item);
-            });
+            container.innerHTML = `
+                <div class="no-thumb">🐷</div>
+                <div style="font-size:1.3rem; font-weight:600; margin-bottom:8px;">${game.title}</div>
+                <div style="color:#aaa; margin-bottom:15px;">${game.description}</div>
+                <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
+            `;
         }
 
-        // ====================== DOWNLOADABLE GAMES (with folder support) ======================
+        // Downloadable Games with folder support
         const owner = "bizbobotwitch";
         const repo = "GAME";
         const tag = "Games";
@@ -208,7 +246,7 @@
                 status.style.display = 'none';
 
                 if (!release.assets || release.assets.length === 0) {
-                    list.innerHTML = `<p style="text-align:center; color:#888;">No games found yet.</p>`;
+                    list.innerHTML = `<p style="text-align:center; color:#888;">No downloadable games found yet.</p>`;
                     return;
                 }
 
@@ -264,7 +302,10 @@
                                 <div class="filename">${asset.displayName}</div>
                                 <div class="size">${sizeMB} MB • ${asset.download_count} downloads</div>
                             </div>
-                            <a href="${asset.browser_download_url}" target="_blank" class="download-btn">Download</a>
+                            <a href="${asset.browser_download_url}" target="_blank" class="download-btn" 
+                               style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
+                                Download
+                            </a>
                         `;
 
                         item.innerHTML = html + newBadge;
@@ -273,19 +314,19 @@
                 });
 
             } catch (e) {
-                status.innerHTML = `Failed to load. Make sure release tag "Games" exists.`;
+                status.innerHTML = `Failed to load games.<br>Make sure the release tag "Games" exists.`;
             }
         }
 
         function switchTab(n) {
-            document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
-            document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i===n));
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+            // For now we only have one main section, but kept the function for future
         }
 
-        // Load everything
+        // Initialize - Start with Downloads + Random Game
         window.onload = () => {
-            renderWebGames();
             fetchGames();
+            showRandomGame();
         };
     </script>
 </body>
