@@ -185,7 +185,6 @@
             text-align: center; 
             margin-top: 40px; 
             color: #666; 
-            font-size: 0.95rem; 
         }
     </style>
 </head>
@@ -288,6 +287,7 @@
                 const images = {};
                 downloadableGames = [];
 
+                // Load existing games from release
                 release.assets.forEach(asset => {
                     const lower = asset.name.toLowerCase();
                     if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
@@ -305,8 +305,26 @@
                     }
                 });
 
+                // Add Kerbal Space Program and Deltarune with direct links
+                downloadableGames.unshift(
+                    {
+                        title: "Kerbal Space Program",
+                        url: "https://steamrip.com/wp-content/uploads/2023/06/Kerbal.Space.Program.zip",   // Direct zip link
+                        description: "Space flight simulation",
+                        type: "download",
+                        thumbUrl: null
+                    },
+                    {
+                        title: "Deltarune Chapters 1+2",
+                        url: "https://itch.io/games/download/1671210",   // Official itch.io direct download
+                        description: "Undertale sequel (Chapters 1 & 2)",
+                        type: "download",
+                        thumbUrl: null
+                    }
+                );
+
                 downloadableGames.forEach(game => {
-                    const base = game.title.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
+                    const base = game.title.toLowerCase().replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '');
                     if (images[base]) game.thumbUrl = images[base];
                 });
 
