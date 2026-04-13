@@ -287,14 +287,16 @@
                 const images = {};
                 downloadableGames = [];
 
-                // Load existing assets from your release
                 release.assets.forEach(asset => {
                     const lower = asset.name.toLowerCase();
                     if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
                         const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
                         images[base] = asset.browser_download_url;
                     } else {
-                        const displayName = asset.name.split('/').pop();
+                        // Remove file extension for display
+                        let displayName = asset.name.split('/').pop();
+                        displayName = displayName.replace(/\.(zip|rar|7z|tar\.gz|exe|bat)$/i, '');
+                        
                         downloadableGames.push({
                             title: displayName,
                             url: asset.browser_download_url,
@@ -305,26 +307,8 @@
                     }
                 });
 
-                // Add Kerbal Space Program and Deltarune with direct downloads
-                downloadableGames.unshift(
-                    {
-                        title: "Kerbal Space Program",
-                        url: "https://hydralinks.cloud/sources/steamrip.json",   // You can replace with actual direct .zip later
-                        description: "Space flight simulation",
-                        type: "download",
-                        thumbUrl: null
-                    },
-                    {
-                        title: "Deltarune Chapters 1+2",
-                        url: "https://hydralinks.cloud/sources/steamrip.json",   // You can replace with actual direct .zip later
-                        description: "Undertale sequel",
-                        type: "download",
-                        thumbUrl: null
-                    }
-                );
-
                 downloadableGames.forEach(game => {
-                    const base = game.title.toLowerCase().replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '');
+                    const base = game.title.toLowerCase();
                     if (images[base]) game.thumbUrl = images[base];
                 });
 
@@ -352,7 +336,7 @@
                 item.className = 'download-item';
                 item.style.position = 'relative';
 
-                const isZadmin = game.title.toLowerCase().includes('zadmin.bat');
+                const isZadmin = game.title.toLowerCase().includes('zadmin');
 
                 const thumbHTML = game.thumbUrl 
                     ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
@@ -407,7 +391,7 @@
         function showRandomGame() {
             const container = document.getElementById('random-game');
             const safeGames = allGames.filter(game => 
-                !game.title.toLowerCase().includes('zadmin.bat')
+                !game.title.toLowerCase().includes('zadmin')
             );
 
             if (safeGames.length === 0) return;
