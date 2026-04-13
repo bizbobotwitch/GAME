@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -242,6 +242,13 @@
                 description: "Addictive circle puzzle game",
                 type: "web",
                 thumb: "⭕"
+            },
+            { 
+                title: "BitLife", 
+                url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", 
+                description: "Life simulation game",
+                type: "web",
+                thumb: "🧬"
             }
         ];
 
@@ -278,7 +285,6 @@
                 const images = {};
                 const downloadable = [];
 
-                // Collect thumbnails and games
                 release.assets.forEach(asset => {
                     const lower = asset.name.toLowerCase();
                     if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
@@ -296,7 +302,6 @@
                     }
                 });
 
-                // Match thumbnails to games
                 downloadable.forEach(game => {
                     const base = game.title.replace(/\.(zip|rar|7z|tar\.gz|exe)$/i, '').toLowerCase();
                     if (images[base]) game.thumbUrl = images[base];
@@ -304,7 +309,6 @@
 
                 allGames = [...webGames, ...downloadable];
 
-                // Render downloadable games
                 list.innerHTML = '';
                 if (downloadable.length === 0) {
                     list.innerHTML = `<p style="text-align:center; color:#888;">No downloadable games found yet.</p>`;
@@ -349,7 +353,7 @@
 
             const thumbHTML = randomGame.thumbUrl 
                 ? `<img src="${randomGame.thumbUrl}" class="thumbnail" style="width:130px;height:130px;">` 
-                : `<div class="no-thumb">${randomGame.type === "web" ? randomGame.thumb || "🌐" : "🎮"}</div>`;
+                : `<div class="no-thumb">${randomGame.thumb || (randomGame.type === "web" ? "🌐" : "🎮")}</div>`;
 
             container.innerHTML = `
                 ${thumbHTML}
