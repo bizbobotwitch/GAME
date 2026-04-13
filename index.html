@@ -37,17 +37,6 @@
             color: #aaaaaa;
             margin-top: 8px;
         }
-        .github-link {
-            display: inline-block;
-            margin: 15px 0;
-            padding: 12px 28px;
-            background: #222;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-        }
-        .github-link:hover { background: #00ff88; color: #000; }
 
         .search-container {
             margin-bottom: 25px;
@@ -204,9 +193,6 @@
         <header>
             <h1>Keith Valley Games</h1>
             <p class="subtitle">Play • Download • Enjoy</p>
-            <a href="https://github.com/bizbobotwitch/GAME" target="_blank" class="github-link">
-                View on GitHub
-            </a>
         </header>
 
         <div class="search-container">
@@ -222,7 +208,7 @@
 
                 <!-- Downloadable Games -->
                 <div id="download-section" class="card">
-                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games from GitHub...</div>
+                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games...</div>
                     <div id="download-list"></div>
                 </div>
 
@@ -252,8 +238,7 @@
         </div>
 
         <footer>
-            Powered by GitHub Releases • 
-            <a href="https://github.com/bizbobotwitch/GAME/releases/tag/Games" target="_blank" style="color:#00ff88;">Open Release Page</a>
+            Made with ❤️ for the Keith Valley community
         </footer>
     </div>
 
@@ -269,7 +254,6 @@
             { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" }
         ];
 
-        // Render Web Games
         function renderWebGames() {
             const container = document.getElementById('web-games-list');
             container.innerHTML = '<h2 style="margin-top:0; color:#00ff88;">🌐 Web Games (Play Instantly)</h2>';
@@ -289,7 +273,6 @@
             });
         }
 
-        // Fetch Downloadable Games
         async function fetchGames() {
             const status = document.getElementById('status');
             const list = document.getElementById('download-list');
@@ -330,7 +313,7 @@
 
                 renderDownloadableGames();
             } catch (e) {
-                status.innerHTML = `Failed to load games.<br>Make sure the release tag "Games" exists.`;
+                status.innerHTML = `Failed to load games. Please try again later.`;
             }
         }
 
@@ -381,9 +364,8 @@
             });
         }
 
-        // Password protection for zadmin.bat
         function checkPassword(url) {
-            const password = prompt("Enter password to download zadmin.bat:");
+            const password = prompt("Enter password to download:");
             if (password === "112111") {
                 window.open(url, '_blank');
             } else {
@@ -391,23 +373,18 @@
             }
         }
 
-        // Search functionality
         function filterGames() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-
             if (query === "") {
                 renderDownloadableGames();
                 return;
             }
-
             const filtered = downloadableGames.filter(game => 
                 game.title.toLowerCase().includes(query)
             );
-
             renderDownloadableGames(filtered);
         }
 
-        // Show random game (excluding zadmin.bat)
         function showRandomGame() {
             const container = document.getElementById('random-game');
             const safeGames = allGames.filter(game => 
