@@ -229,19 +229,16 @@
                     <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
                 </div>
 
-                <!-- Downloadable Games -->
                 <div id="download-section" class="card">
                     <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games...</div>
                     <div id="download-list"></div>
                 </div>
 
-                <!-- Web Games -->
                 <div id="web-section" class="card" style="display: none;">
                     <div id="web-games-list"></div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-card">
                     <div class="try-title">🎲 Try This Game?</div>
@@ -250,7 +247,6 @@
             </div>
         </div>
 
-        <!-- Contact Us -->
         <div class="contact">
             <h2 style="margin: 0 0 15px 0; color: #00ff88;">Contact Us</h2>
             <p style="margin: 0 0 10px 0;">Have questions, feedback, or want to report a bug?</p>
@@ -269,14 +265,12 @@
         let allGames = [];
         let downloadableGames = [];
 
-        // All web games from druskii128.github.io/projects
         const webGames = [
             { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig from escaping!", type: "web", thumb: "🐷" },
             { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Fun ball bouncing challenge", type: "web", thumb: "⚽" },
             { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Addictive circle puzzle game", type: "web", thumb: "⭕" },
             { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life simulation game", type: "web", thumb: "🧬" },
             { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" }
-            // Add more from the folder if you want (just tell me the names)
         ];
 
         function renderWebGames() {
@@ -297,8 +291,6 @@
                 container.appendChild(item);
             });
         }
-
-        // ... (the rest of the script for downloadable games, search, random game, password, etc. stays the same as before)
 
         async function fetchGames() {
             const status = document.getElementById('status');
@@ -346,9 +338,92 @@
             }
         }
 
-        // Keep the rest of the functions (renderDownloadableGames, checkPassword, filterGames, showRandomGame, switchTab) the same as the previous version.
+        function renderDownloadableGames(filtered = null) {
+            const list = document.getElementById('download-list');
+            list.innerHTML = '';
 
-        // (I kept them identical for brevity — copy from your last working file if needed)
+            const gamesToShow = filtered || downloadableGames;
+
+            if (gamesToShow.length === 0) {
+                list.innerHTML = `<p style="text-align:center; color:#888;">No games found.</p>`;
+                return;
+            }
+
+            gamesToShow.forEach(game => {
+                const item = document.createElement('div');
+                item.className = 'download-item';
+                item.style.position = 'relative';
+
+                const isZadmin = game.title.toLowerCase().includes('zadmin');
+
+                const thumbHTML = game.thumbUrl 
+                    ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
+                    : `<div class="no-thumb">🎮</div>`;
+
+                let downloadHTML = isZadmin 
+                    ? `<button onclick="checkPassword('${game.url}')" style="background:#ff5555; color:white; padding:12px 24px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">Download (Password Required)</button>`
+                    : `<a href="${game.url}" target="_blank" style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">Download</a>`;
+
+                item.innerHTML = `
+                    ${thumbHTML}
+                    <div class="info">
+                        <div class="filename">${game.title}</div>
+                        <div class="size">${game.description}</div>
+                    </div>
+                    ${downloadHTML}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function checkPassword(url) {
+            const password = prompt("Enter password to download:");
+            if (password === "112111") {
+                window.open(url, '_blank');
+            } else {
+                alert("Incorrect password!");
+            }
+        }
+
+        function filterGames() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (query === "") {
+                renderDownloadableGames();
+                return;
+            }
+            const filtered = downloadableGames.filter(game => 
+                game.title.toLowerCase().includes(query)
+            );
+            renderDownloadableGames(filtered);
+        }
+
+        function showRandomGame() {
+            const container = document.getElementById('random-game');
+            const safeGames = allGames.filter(game => !game.title.toLowerCase().includes('zadmin'));
+
+            if (safeGames.length === 0) return;
+
+            const randomGame = safeGames[Math.floor(Math.random() * safeGames.length)];
+
+            const thumbHTML = randomGame.thumbUrl 
+                ? `<img src="${randomGame.thumbUrl}" class="thumbnail" style="width:130px;height:130px;">` 
+                : `<div class="no-thumb">${randomGame.thumb || (randomGame.type === "web" ? "🌐" : "🎮")}</div>`;
+
+            container.innerHTML = `
+                ${thumbHTML}
+                <div style="font-size:1.3rem; font-weight:600; margin:12px 0;">${randomGame.title}</div>
+                <div style="color:#aaa; margin-bottom:15px;">${randomGame.description}</div>
+                <a href="${randomGame.url}" target="_blank" class="play-btn">
+                    ${randomGame.type === "web" ? "Play Now" : "Download"}
+                </a>
+            `;
+        }
+
+        function switchTab(n) {
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+            document.getElementById('download-section').style.display = (n === 0) ? 'block' : 'none';
+            document.getElementById('web-section').style.display = (n === 1) ? 'block' : 'none';
+        }
 
         window.onload = () => {
             fetchGames();
