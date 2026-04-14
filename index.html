@@ -38,6 +38,25 @@
             margin-top: 8px;
         }
 
+        .chat-button {
+            display: block;
+            width: fit-content;
+            margin: 20px auto;
+            padding: 14px 32px;
+            background: linear-gradient(90deg, #00ff88, #00b4ff);
+            color: #000;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .chat-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
         .search-container {
             margin-bottom: 25px;
             text-align: center;
@@ -195,6 +214,10 @@
             <p class="subtitle">Play • Download • Enjoy</p>
         </header>
 
+        <a href="https://bizbobotwitch.github.io/Chat/" target="_blank" class="chat-button">
+            💬 Join Keith Valley Chat
+        </a>
+
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search games..." onkeyup="filterGames()">
         </div>
@@ -293,7 +316,6 @@
                         const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
                         images[base] = asset.browser_download_url;
                     } else {
-                        // Remove file extension for display
                         let displayName = asset.name.split('/').pop();
                         displayName = displayName.replace(/\.(zip|rar|7z|tar\.gz|exe|bat)$/i, '');
                         
