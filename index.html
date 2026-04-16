@@ -277,6 +277,14 @@
             { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" }
         ];
 
+        function getRandomThumbnail() {
+            // 1 in 200 chance to show gabe.png
+            if (Math.random() < 1/200) {
+                return "https://bizbobotwitch.github.io/gabe.png";   // Change this URL if your gabe.png is hosted elsewhere
+            }
+            return null;
+        }
+
         function renderWebGames() {
             const container = document.getElementById('web-games-list');
             container.innerHTML = '<h2 style="margin-top:0; color:#00ff88;">🌐 Web Games (Play Instantly)</h2>';
@@ -284,8 +292,14 @@
             webGames.forEach(game => {
                 const item = document.createElement('div');
                 item.className = 'web-game-item';
+
+                const randomThumb = getRandomThumbnail();
+                const thumbHTML = randomThumb 
+                    ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
+                    : `<div class="no-thumb">${game.thumb}</div>`;
+
                 item.innerHTML = `
-                    <div class="no-thumb">${game.thumb}</div>
+                    ${thumbHTML}
                     <div class="info">
                         <div class="web-title">${game.title}</div>
                         <div class="size">${game.description}</div>
@@ -360,9 +374,12 @@
 
                 const isZadmin = game.title.toLowerCase().includes('zadmin');
 
-                const thumbHTML = game.thumbUrl 
-                    ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
-                    : `<div class="no-thumb">🎮</div>`;
+                const randomThumb = getRandomThumbnail();
+                const thumbHTML = randomThumb 
+                    ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
+                    : (game.thumbUrl 
+                        ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
+                        : `<div class="no-thumb">🎮</div>`);
 
                 let downloadHTML = isZadmin 
                     ? `<button onclick="checkPassword('${game.url}')" 
@@ -419,8 +436,9 @@
 
             const randomGame = safeGames[Math.floor(Math.random() * safeGames.length)];
 
-            const thumbHTML = randomGame.thumbUrl 
-                ? `<img src="${randomGame.thumbUrl}" class="thumbnail" style="width:130px;height:130px;">` 
+            const randomThumb = getRandomThumbnail();
+            const thumbHTML = randomThumb 
+                ? `<img src="${randomThumb}" class="thumbnail" style="width:130px;height:130px;">` 
                 : `<div class="no-thumb">${randomGame.thumb || (randomGame.type === "web" ? "🌐" : "🎮")}</div>`;
 
             container.innerHTML = `
