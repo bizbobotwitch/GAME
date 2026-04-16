@@ -277,12 +277,12 @@
             { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" }
         ];
 
-        function getRandomThumbnail() {
-            // 1 in 200 chance to show gabe.png
+        function getRandomThumbnail(normalThumb) {
+            // 1 in 200 chance to show gabe.png instead of normal thumbnail
             if (Math.random() < 1/200) {
-                return "https://bizbobotwitch.github.io/gabe.png";   // Change this URL if your gabe.png is hosted elsewhere
+                return "https://bizbobotwitch.github.io/gabe.png";   // gabe.png is in the same place as your other photos
             }
-            return null;
+            return normalThumb;
         }
 
         function renderWebGames() {
@@ -293,7 +293,7 @@
                 const item = document.createElement('div');
                 item.className = 'web-game-item';
 
-                const randomThumb = getRandomThumbnail();
+                const randomThumb = getRandomThumbnail(null);
                 const thumbHTML = randomThumb 
                     ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
                     : `<div class="no-thumb">${game.thumb}</div>`;
@@ -374,12 +374,10 @@
 
                 const isZadmin = game.title.toLowerCase().includes('zadmin');
 
-                const randomThumb = getRandomThumbnail();
+                const randomThumb = getRandomThumbnail(game.thumbUrl);
                 const thumbHTML = randomThumb 
                     ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
-                    : (game.thumbUrl 
-                        ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
-                        : `<div class="no-thumb">🎮</div>`);
+                    : `<div class="no-thumb">🎮</div>`;
 
                 let downloadHTML = isZadmin 
                     ? `<button onclick="checkPassword('${game.url}')" 
@@ -436,7 +434,7 @@
 
             const randomGame = safeGames[Math.floor(Math.random() * safeGames.length)];
 
-            const randomThumb = getRandomThumbnail();
+            const randomThumb = getRandomThumbnail(randomGame.thumbUrl);
             const thumbHTML = randomThumb 
                 ? `<img src="${randomThumb}" class="thumbnail" style="width:130px;height:130px;">` 
                 : `<div class="no-thumb">${randomGame.thumb || (randomGame.type === "web" ? "🌐" : "🎮")}</div>`;
