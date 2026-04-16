@@ -151,6 +151,40 @@
         }
         .size { color: #888; font-size: 0.9rem; }
 
+        /* Custom Popup */
+        .custom-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup-content {
+            background: #1e1e2e;
+            padding: 30px 40px;
+            border-radius: 16px;
+            max-width: 420px;
+            text-align: center;
+            border: 2px solid #00ff88;
+        }
+        .popup-content h3 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        .close-btn {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         .sidebar-card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
@@ -229,19 +263,16 @@
                     <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
                 </div>
 
-                <!-- Downloadable Games -->
                 <div id="download-section" class="card">
                     <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games...</div>
                     <div id="download-list"></div>
                 </div>
 
-                <!-- Web Games -->
                 <div id="web-section" class="card" style="display: none;">
                     <div id="web-games-list"></div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-card">
                     <div class="try-title">🎲 Try This Game?</div>
@@ -250,7 +281,6 @@
             </div>
         </div>
 
-        <!-- Contact Us -->
         <div class="contact">
             <h2 style="margin: 0 0 15px 0; color: #00ff88;">Contact Us</h2>
             <p style="margin: 0 0 10px 0;">Have questions, feedback, or want to report a bug?</p>
@@ -265,6 +295,18 @@
         </footer>
     </div>
 
+    <!-- Custom Popup for SUPERHOT -->
+    <div id="superhot-popup" class="custom-popup">
+        <div class="popup-content">
+            <h3>⚠️ Important Note</h3>
+            <p style="line-height: 1.6;">
+                You must run <strong>SH.exe</strong><br>
+                Do <strong>NOT</strong> run Superhot.exe
+            </p>
+            <button class="close-btn" onclick="closeSuperhotPopup()">OK, Got it</button>
+        </div>
+    </div>
+
     <script>
         let allGames = [];
         let downloadableGames = [];
@@ -275,7 +317,6 @@
             { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Addictive circle puzzle game", type: "web", thumb: "⭕" },
             { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life simulation game", type: "web", thumb: "🧬" },
             { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" },
-            { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drifting car game", type: "web", thumb: "🏎️" },
             { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Avoid obstacles and survive", type: "web", thumb: "💀" }
         ];
 
@@ -361,20 +402,30 @@
                 item.style.position = 'relative';
 
                 const isZadmin = game.title.toLowerCase().includes('zadmin');
+                const isSuperhot = game.title.toLowerCase().includes('superhot');
 
                 const thumbHTML = game.thumbUrl 
                     ? `<img src="${game.thumbUrl}" class="thumbnail" alt="Preview">` 
                     : `<div class="no-thumb">🎮</div>`;
 
-                let downloadHTML = isZadmin 
-                    ? `<button onclick="checkPassword('${game.url}')" 
+                let downloadHTML = '';
+
+                if (isZadmin) {
+                    downloadHTML = `<button onclick="checkPassword('${game.url}')" 
                         style="background:#ff5555; color:white; padding:12px 24px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">
                         Download (Password Required)
-                    </button>`
-                    : `<a href="${game.url}" target="_blank" 
+                    </button>`;
+                } else if (isSuperhot) {
+                    downloadHTML = `<a href="${game.url}" target="_blank" onclick="showSuperhotPopup(); return false;" 
                         style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
                         Download
                     </a>`;
+                } else {
+                    downloadHTML = `<a href="${game.url}" target="_blank" onclick="showExtractMessage()" 
+                        style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
+                        Download
+                    </a>`;
+                }
 
                 item.innerHTML = `
                     ${thumbHTML}
@@ -386,6 +437,20 @@
                 `;
                 list.appendChild(item);
             });
+        }
+
+        // General extract message
+        function showExtractMessage() {
+            alert("You must extract the game before you play!\n\n1. Download the file\n2. Extract the zip/rar file\n3. Run the game executable");
+        }
+
+        // Custom popup for SUPERHOT
+        function showSuperhotPopup() {
+            document.getElementById('superhot-popup').style.display = 'flex';
+        }
+
+        function closeSuperhotPopup() {
+            document.getElementById('superhot-popup').style.display = 'none';
         }
 
         function checkPassword(url) {
