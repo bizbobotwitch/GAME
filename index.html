@@ -229,16 +229,19 @@
                     <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
                 </div>
 
+                <!-- Downloadable Games -->
                 <div id="download-section" class="card">
                     <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games...</div>
                     <div id="download-list"></div>
                 </div>
 
+                <!-- Web Games -->
                 <div id="web-section" class="card" style="display: none;">
                     <div id="web-games-list"></div>
                 </div>
             </div>
 
+            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-card">
                     <div class="try-title">🎲 Try This Game?</div>
@@ -247,6 +250,7 @@
             </div>
         </div>
 
+        <!-- Contact Us -->
         <div class="contact">
             <h2 style="margin: 0 0 15px 0; color: #00ff88;">Contact Us</h2>
             <p style="margin: 0 0 10px 0;">Have questions, feedback, or want to report a bug?</p>
@@ -270,7 +274,9 @@
             { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Fun ball bouncing challenge", type: "web", thumb: "⚽" },
             { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Addictive circle puzzle game", type: "web", thumb: "⭕" },
             { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life simulation game", type: "web", thumb: "🧬" },
-            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" }
+            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" },
+            { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drifting car game", type: "web", thumb: "🏎️" },
+            { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Avoid obstacles and survive", type: "web", thumb: "💀" }
         ];
 
         function renderWebGames() {
@@ -361,8 +367,14 @@
                     : `<div class="no-thumb">🎮</div>`;
 
                 let downloadHTML = isZadmin 
-                    ? `<button onclick="checkPassword('${game.url}')" style="background:#ff5555; color:white; padding:12px 24px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">Download (Password Required)</button>`
-                    : `<a href="${game.url}" target="_blank" style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">Download</a>`;
+                    ? `<button onclick="checkPassword('${game.url}')" 
+                        style="background:#ff5555; color:white; padding:12px 24px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">
+                        Download (Password Required)
+                    </button>`
+                    : `<a href="${game.url}" target="_blank" 
+                        style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
+                        Download
+                    </a>`;
 
                 item.innerHTML = `
                     ${thumbHTML}
