@@ -274,13 +274,14 @@
             { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Avoid obstacles and survive", type: "web", thumb: "💀" },
             { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drifting car game", type: "web", thumb: "🏎️" },
             { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", description: "Rocket launching physics game", type: "web", thumb: "🚀" },
-            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" }
+            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" },
+            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Classic number puzzle", type: "web", thumb: "🔢" }
         ];
 
-        // 1 in 200 chance to show gabe.png (hosted at the same place as your other photos)
+        // 1 in 200 chance to show gabe.png from your v0.1 release
         function getRandomThumbnail(normalThumb) {
             if (Math.random() < 1/200) {
-                return "https://bizbobotwitch.github.io/gabe.png";   // ← Make sure gabe.png is uploaded to your repo root
+                return "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
             }
             return normalThumb;
         }
