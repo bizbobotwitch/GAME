@@ -265,6 +265,7 @@
         let allGames = [];
         let downloadableGames = [];
 
+        // All web games from druskii128.github.io/projects
         const webGames = [
             { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig from escaping!", type: "web", thumb: "🐷" },
             { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Fun ball bouncing challenge", type: "web", thumb: "⚽" },
@@ -275,10 +276,11 @@
             { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drifting car game", type: "web", thumb: "🏎️" },
             { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", description: "Rocket launching physics game", type: "web", thumb: "🚀" },
             { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" },
-            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Classic number puzzle", type: "web", thumb: "🔢" }
+            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Classic number puzzle", type: "web", thumb: "🔢" },
+            { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "The original idle cookie game", type: "web", thumb: "🍪" }
         ];
 
-        // 1 in 200 chance to show gabe.png from your v0.1 release
+        // 1 in 200 chance to show gabe.png (from your v0.1 release)
         function getRandomThumbnail(normalThumb) {
             if (Math.random() < 1/200) {
                 return "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
