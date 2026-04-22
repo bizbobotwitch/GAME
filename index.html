@@ -105,7 +105,7 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .download-item, .web-game-item {
+        .download-item, .web-game-item, .mod-item {
             display: flex;
             align-items: center;
             gap: 20px;
@@ -116,7 +116,7 @@
             margin-bottom: 14px;
             transition: all 0.3s;
         }
-        .download-item:hover, .web-game-item:hover {
+        .download-item:hover, .web-game-item:hover, .mod-item:hover {
             background: #00ff88;
             color: #000;
             transform: translateX(8px);
@@ -151,6 +151,26 @@
         }
         .size { color: #888; font-size: 0.9rem; }
 
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            border: 1px dashed rgba(0,255,136,0.5);
+        }
+        .upload-form input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #111;
+            color: white;
+        }
+        .upload-form label { font-size: 0.9rem; color: #00ff88; font-weight: 600; }
+
         .sidebar-card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
@@ -182,6 +202,9 @@
             text-decoration: none;
             font-weight: 700;
             margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
         }
 
         .contact {
@@ -192,19 +215,9 @@
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .contact a {
-            color: #00ff88;
-            text-decoration: none;
-        }
-        .contact a:hover {
-            text-decoration: underline;
-        }
+        .contact a { color: #00ff88; text-decoration: none; }
 
-        footer { 
-            text-align: center; 
-            margin-top: 40px; 
-            color: #666; 
-        }
+        footer { text-align: center; margin-top: 40px; color: #666; }
     </style>
 </head>
 <body>
@@ -225,8 +238,9 @@
         <div class="main-content">
             <div class="downloads-section">
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab(0)">⬇️ Downloadable Games</div>
-                    <div class="tab" onclick="switchTab(1)">🌐 Web Games</div>
+                    <div class="tab active" onclick="switchTab(0)">⬇️ Games</div>
+                    <div class="tab" onclick="switchTab(1)">🌐 Web</div>
+                    <div class="tab" onclick="switchTab(2)">🛠️ TABS Mods</div>
                 </div>
 
                 <div id="download-section" class="card">
@@ -236,6 +250,22 @@
 
                 <div id="web-section" class="card" style="display: none;">
                     <div id="web-games-list"></div>
+                </div>
+
+                <div id="mod-section" class="card" style="display: none;">
+                    <div class="upload-form">
+                        <h3 style="margin-top:0; color:#00ff88;">Upload TABS Mod</h3>
+                        <label>Mod Name</label>
+                        <input type="text" id="modName" placeholder="e.g. Laser Eyes Mod">
+                        <label>Link to Mod File (Google Drive/MediaFire)</label>
+                        <input type="text" id="modLink" placeholder="https://...">
+                        <label>Your Username</label>
+                        <input type="text" id="modAuthor" placeholder="Creator Name">
+                        <button onclick="submitMod()" class="play-btn">Submit via GitHub</button>
+                    </div>
+                    <div id="mods-list">
+                        <p style="text-align:center; color:#888;">No mods listed yet. Use the form above to submit one!</p>
+                    </div>
                 </div>
             </div>
 
@@ -249,220 +279,123 @@
 
         <div class="contact">
             <h2 style="margin: 0 0 15px 0; color: #00ff88;">Contact Us</h2>
-            <p style="margin: 0 0 10px 0;">Have questions, feedback, or want to report a bug?</p>
-            <p style="margin: 0;">
-                Email us at: 
-                <a href="mailto:Bizbobotwitch1@gmail.com">Bizbobotwitch1@gmail.com</a>
-            </p>
+            <p>Email: <a href="mailto:Bizbobotwitch1@gmail.com">Bizbobotwitch1@gmail.com</a></p>
         </div>
 
-        <footer>
-            Made with ❤️ for the Keith Valley community
-        </footer>
+        <footer>Made with ❤️ for the Keith Valley community</footer>
     </div>
 
     <script>
         let allGames = [];
         let downloadableGames = [];
 
-        // All web games from druskii128.github.io/projects
         const webGames = [
-            { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig from escaping!", type: "web", thumb: "🐷" },
-            { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Fun ball bouncing challenge", type: "web", thumb: "⚽" },
-            { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Addictive circle puzzle game", type: "web", thumb: "⭕" },
-            { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life simulation game", type: "web", thumb: "🧬" },
-            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "High-speed endless runner", type: "web", thumb: "🏂" },
-            { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Avoid obstacles and survive", type: "web", thumb: "💀" },
-            { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drifting car game", type: "web", thumb: "🏎️" },
-            { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", description: "Rocket launching physics game", type: "web", thumb: "🚀" },
-            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "Historical war simulator", type: "web", thumb: "⚔️" },
-            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Classic number puzzle", type: "web", thumb: "🔢" },
-            { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "The original idle cookie game", type: "web", thumb: "🍪" }
+            { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig!", thumb: "🐷" },
+            { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Bouncing challenge", thumb: "⚽" },
+            { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Circle puzzle", thumb: "⭕" },
+            { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life sim", thumb: "🧬" },
+            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "Endless runner", thumb: "🏂" },
+            { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Survive!", thumb: "💀" },
+            { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drift king", thumb: "🏎️" },
+            { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", description: "Physics rocket", thumb: "🚀" },
+            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "War sim", thumb: "⚔️" },
+            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Numbers", thumb: "🔢" },
+            { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "Cookies!", thumb: "🍪" }
         ];
 
-        // 1 in 200 chance to show gabe.png (from your v0.1 release)
         function getRandomThumbnail(normalThumb) {
-            if (Math.random() < 1/200) {
-                return "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
-            }
-            return normalThumb;
-        }
-
-        function renderWebGames() {
-            const container = document.getElementById('web-games-list');
-            container.innerHTML = '<h2 style="margin-top:0; color:#00ff88;">🌐 Web Games (Play Instantly)</h2>';
-
-            webGames.forEach(game => {
-                const item = document.createElement('div');
-                item.className = 'web-game-item';
-
-                const randomThumb = getRandomThumbnail(null);
-                const thumbHTML = randomThumb 
-                    ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
-                    : `<div class="no-thumb">${game.thumb}</div>`;
-
-                item.innerHTML = `
-                    ${thumbHTML}
-                    <div class="info">
-                        <div class="web-title">${game.title}</div>
-                        <div class="size">${game.description}</div>
-                    </div>
-                    <a href="${game.url}" target="_blank" class="play-btn">Play Now</a>
-                `;
-                container.appendChild(item);
-            });
+            return (Math.random() < 1/200) ? "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png" : normalThumb;
         }
 
         async function fetchGames() {
             const status = document.getElementById('status');
-            const list = document.getElementById('download-list');
-
             try {
                 const res = await fetch(`https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games`);
-                if (!res.ok) throw new Error();
-
                 const release = await res.json();
                 status.style.display = 'none';
 
                 const images = {};
-                downloadableGames = [];
-
                 release.assets.forEach(asset => {
                     const lower = asset.name.toLowerCase();
-                    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
-                        const base = asset.name.replace(/\.(png|jpg|jpeg)$/i, '').toLowerCase();
-                        images[base] = asset.browser_download_url;
+                    if (lower.match(/\.(png|jpg|jpeg)$/)) {
+                        images[asset.name.replace(/\.[^/.]+$/, "").toLowerCase()] = asset.browser_download_url;
                     } else {
-                        let displayName = asset.name.split('/').pop();
-                        displayName = displayName.replace(/\.(zip|rar|7z|tar\.gz|exe|bat)$/i, '');
-                        
                         downloadableGames.push({
-                            title: displayName,
+                            title: asset.name.replace(/\.[^/.]+$/, ""),
                             url: asset.browser_download_url,
                             description: (asset.size / (1024*1024)).toFixed(1) + " MB",
-                            type: "download",
-                            thumbUrl: null
+                            type: "download"
                         });
                     }
                 });
 
-                downloadableGames.forEach(game => {
-                    const base = game.title.toLowerCase();
-                    if (images[base]) game.thumbUrl = images[base];
-                });
-
+                downloadableGames.forEach(g => { g.thumbUrl = images[g.title.toLowerCase()]; });
                 allGames = [...webGames, ...downloadableGames];
-
                 renderDownloadableGames();
-            } catch (e) {
-                status.innerHTML = `Failed to load games. Please try again later.`;
-            }
+                renderWebGames();
+                showRandomGame();
+            } catch (e) { status.innerHTML = "Error loading games."; }
         }
 
         function renderDownloadableGames(filtered = null) {
             const list = document.getElementById('download-list');
             list.innerHTML = '';
-
-            const gamesToShow = filtered || downloadableGames;
-
-            if (gamesToShow.length === 0) {
-                list.innerHTML = `<p style="text-align:center; color:#888;">No games found.</p>`;
-                return;
-            }
-
-            gamesToShow.forEach(game => {
+            (filtered || downloadableGames).forEach(game => {
+                const isZadmin = game.title.toLowerCase().includes('zadmin');
+                const thumb = getRandomThumbnail(game.thumbUrl);
                 const item = document.createElement('div');
                 item.className = 'download-item';
-                item.style.position = 'relative';
-
-                const isZadmin = game.title.toLowerCase().includes('zadmin');
-
-                const randomThumb = getRandomThumbnail(game.thumbUrl);
-                const thumbHTML = randomThumb 
-                    ? `<img src="${randomThumb}" class="thumbnail" alt="Preview">` 
-                    : `<div class="no-thumb">🎮</div>`;
-
-                let downloadHTML = isZadmin 
-                    ? `<button onclick="checkPassword('${game.url}')" 
-                        style="background:#ff5555; color:white; padding:12px 24px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">
-                        Download (Password Required)
-                    </button>`
-                    : `<a href="${game.url}" target="_blank" onclick="showExtractMessage()" 
-                        style="background:#00ff88; color:#000; padding:12px 24px; border-radius:50px; text-decoration:none; font-weight:600;">
-                        Download
-                    </a>`;
-
                 item.innerHTML = `
-                    ${thumbHTML}
-                    <div class="info">
-                        <div class="filename">${game.title}</div>
-                        <div class="size">${game.description}</div>
-                    </div>
-                    ${downloadHTML}
+                    ${thumb ? `<img src="${thumb}" class="thumbnail">` : `<div class="no-thumb">🎮</div>`}
+                    <div class="info"><div class="filename">${game.title}</div><div class="size">${game.description}</div></div>
+                    ${isZadmin ? `<button onclick="checkPass('${game.url}')" class="play-btn" style="background:#ff5555;color:white;">Pass Required</button>` : 
+                    `<a href="${game.url}" target="_blank" onclick="alert('Extract before playing!')" class="play-btn">Download</a>`}
                 `;
                 list.appendChild(item);
             });
         }
 
-        function showExtractMessage() {
-            alert("You must extract the game before you play!\n\n1. Download the file\n2. Extract the .zip or .rar file\n3. Run the game executable");
+        function renderWebGames() {
+            const list = document.getElementById('web-games-list');
+            list.innerHTML = '<h2 style="color:#00ff88; margin-top:0;">🌐 Instant Play</h2>';
+            webGames.forEach(game => {
+                const item = document.createElement('div');
+                item.className = 'web-game-item';
+                item.innerHTML = `<div class="no-thumb">${game.thumb}</div><div class="info"><div class="web-title">${game.title}</div><div class="size">${game.description}</div></div><a href="${game.url}" target="_blank" class="play-btn">Play</a>`;
+                list.appendChild(item);
+            });
         }
 
-        function checkPassword(url) {
-            const password = prompt("Enter password to download:");
-            if (password === "112111") {
-                window.open(url, '_blank');
-            } else {
-                alert("Incorrect password!");
-            }
-        }
-
-        function filterGames() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            if (query === "") {
-                renderDownloadableGames();
-                return;
-            }
-            const filtered = downloadableGames.filter(game => 
-                game.title.toLowerCase().includes(query)
-            );
-            renderDownloadableGames(filtered);
-        }
-
-        function showRandomGame() {
-            const container = document.getElementById('random-game');
-            const safeGames = allGames.filter(game => !game.title.toLowerCase().includes('zadmin'));
-
-            if (safeGames.length === 0) return;
-
-            const randomGame = safeGames[Math.floor(Math.random() * safeGames.length)];
-
-            const randomThumb = getRandomThumbnail(randomGame.thumbUrl);
-            const thumbHTML = randomThumb 
-                ? `<img src="${randomThumb}" class="thumbnail" style="width:130px;height:130px;">` 
-                : `<div class="no-thumb">${randomGame.thumb || (randomGame.type === "web" ? "🌐" : "🎮")}</div>`;
-
-            container.innerHTML = `
-                ${thumbHTML}
-                <div style="font-size:1.3rem; font-weight:600; margin:12px 0;">${randomGame.title}</div>
-                <div style="color:#aaa; margin-bottom:15px;">${randomGame.description}</div>
-                <a href="${randomGame.url}" target="_blank" class="play-btn">
-                    ${randomGame.type === "web" ? "Play Now" : "Download"}
-                </a>
-            `;
+        function submitMod() {
+            const name = document.getElementById('modName').value;
+            const link = document.getElementById('modLink').value;
+            const author = document.getElementById('modAuthor').value;
+            if(!name || !link) return alert("Fill out Name and Link!");
+            const body = encodeURIComponent(`Mod: ${name}\nAuthor: ${author}\nLink: ${link}`);
+            window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=Mod Submission: ${name}&body=${body}`, '_blank');
         }
 
         function switchTab(n) {
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
             document.getElementById('download-section').style.display = (n === 0) ? 'block' : 'none';
             document.getElementById('web-section').style.display = (n === 1) ? 'block' : 'none';
+            document.getElementById('mod-section').style.display = (n === 2) ? 'block' : 'none';
         }
 
-        window.onload = () => {
-            fetchGames();
-            renderWebGames();
-            setTimeout(showRandomGame, 1200);
-        };
+        function filterGames() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            renderDownloadableGames(downloadableGames.filter(g => g.title.toLowerCase().includes(q)));
+        }
+
+        function checkPass(url) { if(prompt("Pass?") === "112111") window.open(url); else alert("Wrong"); }
+
+        function showRandomGame() {
+            const container = document.getElementById('random-game');
+            const game = allGames[Math.floor(Math.random() * allGames.length)];
+            container.innerHTML = `<div class="no-thumb">${game.thumb || '🎮'}</div><div style="margin:10px 0; font-weight:700;">${game.title}</div><a href="${game.url}" target="_blank" class="play-btn">Try Now</a>`;
+        }
+
+        window.onload = fetchGames;
     </script>
 </body>
 </html>
