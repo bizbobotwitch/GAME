@@ -318,10 +318,14 @@
                 release.assets.forEach(asset => {
                     const lower = asset.name.toLowerCase();
                     if (lower.match(/\.(png|jpg|jpeg)$/)) {
-                        images[asset.name.replace(/\.[^/.]+$/, "").toLowerCase()] = asset.browser_download_url;
+                        let cleanImgName = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").toLowerCase();
+                        images[cleanImgName] = asset.browser_download_url;
                     } else {
+                        // REMOVE -KVGAMES FROM THE DISPLAY TITLE
+                        let cleanTitle = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "");
+                        
                         downloadableGames.push({
-                            title: asset.name.replace(/\.[^/.]+$/, ""),
+                            title: cleanTitle,
                             url: asset.browser_download_url,
                             description: (asset.size / (1024*1024)).toFixed(1) + " MB",
                             type: "download"
@@ -391,6 +395,7 @@
 
         function showRandomGame() {
             const container = document.getElementById('random-game');
+            if (allGames.length === 0) return;
             const game = allGames[Math.floor(Math.random() * allGames.length)];
             container.innerHTML = `<div class="no-thumb">${game.thumb || '🎮'}</div><div style="margin:10px 0; font-weight:700;">${game.title}</div><a href="${game.url}" target="_blank" class="play-btn">Try Now</a>`;
         }
