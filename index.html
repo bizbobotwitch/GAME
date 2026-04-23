@@ -151,6 +151,13 @@
         }
         .size { color: #888; font-size: 0.9rem; }
 
+        .upload-instructions {
+            background: rgba(0, 255, 136, 0.05);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
         .upload-form {
             display: flex;
             flex-direction: column;
@@ -244,7 +251,7 @@
                 </div>
 
                 <div id="download-section" class="card">
-                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Loading games...</div>
+                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Connecting to Repository...</div>
                     <div id="download-list"></div>
                 </div>
 
@@ -253,18 +260,29 @@
                 </div>
 
                 <div id="mod-section" class="card" style="display: none;">
+                    <div class="upload-instructions">
+                        <strong style="color:#00ff88;">How to Share:</strong><br>
+                        1. Enter mod info below.<br>
+                        2. Click Submit to open a GitHub Issue.<br>
+                        3. Drag your file into the box on GitHub and post it!<br>
+                        <em>We review every mod for safety.</em>
+                    </div>
+
                     <div class="upload-form">
-                        <h3 style="margin-top:0; color:#00ff88;">Upload TABS Mod</h3>
                         <label>Mod Name</label>
                         <input type="text" id="modName" placeholder="e.g. Laser Eyes Mod">
-                        <label>Link to Mod File (Google Drive/MediaFire)</label>
-                        <input type="text" id="modLink" placeholder="https://...">
+                        
                         <label>Your Username</label>
                         <input type="text" id="modAuthor" placeholder="Creator Name">
+                        
                         <button onclick="submitMod()" class="play-btn">Submit via GitHub</button>
                     </div>
+
                     <div id="mods-list">
-                        <p style="text-align:center; color:#888;">No mods listed yet. Use the form above to submit one!</p>
+                        <h2 style="color: #00ff88;">Verified Community Mods</h2>
+                        <div id="mod-items-container">
+                             <p style="text-align:center; color:#888;">No mods verified yet. Be the first!</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -310,41 +328,66 @@
         async function fetchGames() {
             const status = document.getElementById('status');
             try {
+                // Ensure the repository and tag "Games" is correct
                 const res = await fetch(`https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games`);
+                if (!res.ok) throw new Error("Release not found");
+                
                 const release = await res.json();
                 status.style.display = 'none';
 
                 const images = {};
+                const gameFiles = [];
+
                 release.assets.forEach(asset => {
-                    const lower = asset.name.toLowerCase();
-                    if (lower.match(/\.(png|jpg|jpeg)$/)) {
-                        let cleanImgName = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").toLowerCase();
-                        images[cleanImgName] = asset.browser_download_url;
+                    const name = asset.name;
+                    const lowerName = name.toLowerCase();
+
+                    // Identify images vs game files
+                    if (lowerName.match(/\.(png|jpg|jpeg|webp)$/)) {
+                        // Key = filename without extension and without -KVGAMES
+                        const key = name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim().toLowerCase();
+                        images[key] = asset.browser_download_url;
                     } else {
-                        // REMOVE -KVGAMES FROM THE DISPLAY TITLE
-                        let cleanTitle = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "");
-                        
-                        downloadableGames.push({
-                            title: cleanTitle,
-                            url: asset.browser_download_url,
-                            description: (asset.size / (1024*1024)).toFixed(1) + " MB",
-                            type: "download"
-                        });
+                        gameFiles.push(asset);
                     }
                 });
 
-                downloadableGames.forEach(g => { g.thumbUrl = images[g.title.toLowerCase()]; });
+                downloadableGames = gameFiles.map(asset => {
+                    // Clean title for display
+                    const cleanTitle = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim();
+                    // Key for matching image
+                    const matchKey = cleanTitle.toLowerCase();
+
+                    return {
+                        title: cleanTitle,
+                        url: asset.browser_download_url,
+                        description: (asset.size / (1024*1024)).toFixed(1) + " MB",
+                        type: "download",
+                        thumbUrl: images[matchKey] || null
+                    };
+                });
+
                 allGames = [...webGames, ...downloadableGames];
                 renderDownloadableGames();
                 renderWebGames();
                 showRandomGame();
-            } catch (e) { status.innerHTML = "Error loading games."; }
+            } catch (e) { 
+                status.innerHTML = "Sync Error: Could not find 'Games' release on GitHub.";
+                console.error(e);
+            }
         }
 
         function renderDownloadableGames(filtered = null) {
             const list = document.getElementById('download-list');
             list.innerHTML = '';
-            (filtered || downloadableGames).forEach(game => {
+            const data = filtered || downloadableGames;
+            
+            if (data.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#888;">No games matching your search.</p>';
+                return;
+            }
+
+            data.forEach(game => {
                 const isZadmin = game.title.toLowerCase().includes('zadmin');
                 const thumb = getRandomThumbnail(game.thumbUrl);
                 const item = document.createElement('div');
@@ -352,8 +395,8 @@
                 item.innerHTML = `
                     ${thumb ? `<img src="${thumb}" class="thumbnail">` : `<div class="no-thumb">🎮</div>`}
                     <div class="info"><div class="filename">${game.title}</div><div class="size">${game.description}</div></div>
-                    ${isZadmin ? `<button onclick="checkPass('${game.url}')" class="play-btn" style="background:#ff5555;color:white;">Pass Required</button>` : 
-                    `<a href="${game.url}" target="_blank" onclick="alert('Extract before playing!')" class="play-btn">Download</a>`}
+                    ${isZadmin ? `<button onclick="checkPass('${game.url}')" class="play-btn" style="background:#ff5555;color:white;">Locked</button>` : 
+                    `<a href="${game.url}" target="_blank" onclick="alert('Note: Extract the folder before playing!')" class="play-btn">Download</a>`}
                 `;
                 list.appendChild(item);
             });
@@ -361,7 +404,7 @@
 
         function renderWebGames() {
             const list = document.getElementById('web-games-list');
-            list.innerHTML = '<h2 style="color:#00ff88; margin-top:0;">🌐 Instant Play</h2>';
+            list.innerHTML = '<h2 style="color:#00ff88; margin-top:0;">🌐 Play Online</h2>';
             webGames.forEach(game => {
                 const item = document.createElement('div');
                 item.className = 'web-game-item';
@@ -372,11 +415,10 @@
 
         function submitMod() {
             const name = document.getElementById('modName').value;
-            const link = document.getElementById('modLink').value;
             const author = document.getElementById('modAuthor').value;
-            if(!name || !link) return alert("Fill out Name and Link!");
-            const body = encodeURIComponent(`Mod: ${name}\nAuthor: ${author}\nLink: ${link}`);
-            window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=Mod Submission: ${name}&body=${body}`, '_blank');
+            if(!name || !author) return alert("Mod Name and Author are required!");
+            const body = encodeURIComponent(`Mod: ${name}\nAuthor: ${author}\n\n[ADMIN: DRAG MOD FILE HERE]`);
+            window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=TABS Mod: ${name}&body=${body}`, '_blank');
         }
 
         function switchTab(n) {
@@ -391,13 +433,13 @@
             renderDownloadableGames(downloadableGames.filter(g => g.title.toLowerCase().includes(q)));
         }
 
-        function checkPass(url) { if(prompt("Pass?") === "112111") window.open(url); else alert("Wrong"); }
+        function checkPass(url) { if(prompt("Access Key:") === "112111") window.open(url); else alert("Incorrect"); }
 
         function showRandomGame() {
             const container = document.getElementById('random-game');
             if (allGames.length === 0) return;
             const game = allGames[Math.floor(Math.random() * allGames.length)];
-            container.innerHTML = `<div class="no-thumb">${game.thumb || '🎮'}</div><div style="margin:10px 0; font-weight:700;">${game.title}</div><a href="${game.url}" target="_blank" class="play-btn">Try Now</a>`;
+            container.innerHTML = `<div class="no-thumb">${game.thumb || '🎮'}</div><div style="margin:10px 0; font-weight:700;">${game.title}</div><a href="${game.url}" target="_blank" class="play-btn">Try This</a>`;
         }
 
         window.onload = fetchGames;
