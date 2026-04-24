@@ -308,6 +308,7 @@
         let downloadableGames = [];
 
         const webGames = [
+            { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", description: "Fast-paced racing game", thumb: "🏎️" },
             { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig!", thumb: "🐷" },
             { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Bouncing challenge", thumb: "⚽" },
             { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Circle puzzle", thumb: "⭕" },
@@ -328,7 +329,6 @@
         async function fetchGames() {
             const status = document.getElementById('status');
             try {
-                // Ensure the repository and tag "Games" is correct
                 const res = await fetch(`https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games`);
                 if (!res.ok) throw new Error("Release not found");
                 
@@ -342,9 +342,7 @@
                     const name = asset.name;
                     const lowerName = name.toLowerCase();
 
-                    // Identify images vs game files
                     if (lowerName.match(/\.(png|jpg|jpeg|webp)$/)) {
-                        // Key = filename without extension and without -KVGAMES
                         const key = name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim().toLowerCase();
                         images[key] = asset.browser_download_url;
                     } else {
@@ -353,9 +351,7 @@
                 });
 
                 downloadableGames = gameFiles.map(asset => {
-                    // Clean title for display
                     const cleanTitle = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim();
-                    // Key for matching image
                     const matchKey = cleanTitle.toLowerCase();
 
                     return {
