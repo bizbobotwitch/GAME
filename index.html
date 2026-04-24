@@ -5,283 +5,231 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keith Valley Games</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap');
         
+        :root {
+            --primary: #00ff88;
+            --secondary: #00b4ff;
+            --bg-dark: #0a0a0c;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
         body {
             margin: 0;
             font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
-            color: #e0e0e0;
+            background: radial-gradient(circle at top, #1a1a2e 0%, #0a0a0c 100%);
+            color: #f0f0f0;
             min-height: 100vh;
-        }
-        .container { 
-            max-width: 1200px; 
-            margin: 40px auto; 
-            padding: 20px; 
-        }
-        header { 
-            text-align: center; 
-            margin-bottom: 40px; 
-        }
-        h1 {
-            font-size: 3.6rem;
-            background: linear-gradient(90deg, #00ff88, #00b4ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-            letter-spacing: -2px;
-            margin: 0;
-        }
-        .subtitle {
-            font-size: 1.4rem;
-            color: #aaaaaa;
-            margin-top: 8px;
+            line-height: 1.6;
         }
 
-        .chat-button {
-            display: block;
-            width: fit-content;
-            margin: 20px auto;
-            padding: 14px 32px;
-            background: linear-gradient(90deg, #00ff88, #00b4ff);
-            color: #000;
-            font-weight: 700;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            text-decoration: none;
-            text-align: center;
-            transition: all 0.3s;
+        .container { 
+            max-width: 1300px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
         }
-        .chat-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+
+        header { 
+            text-align: center; 
+            margin-bottom: 60px; 
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -3px;
+            margin: 0;
+            filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.3));
         }
 
         .search-container {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        #searchInput {
-            width: 60%;
-            max-width: 500px;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 50px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 1.05rem;
-        }
-        #searchInput::placeholder { color: #888; }
-
-        .main-content {
+            margin: 40px 0;
             display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
+            justify-content: center;
         }
-        .downloads-section { flex: 1; min-width: 300px; }
-        .sidebar { width: 320px; min-width: 280px; }
+
+        #searchInput {
+            width: 100%;
+            max-width: 600px;
+            padding: 18px 30px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.4);
+            color: white;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(0, 180, 255, 0.2);
+        }
 
         .tabs {
             display: flex;
-            margin-bottom: 25px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
         }
+
         .tab {
-            padding: 14px 32px;
-            font-size: 1.25rem;
+            padding: 12px 25px;
             font-weight: 600;
             cursor: pointer;
-            color: #aaa;
+            color: #777;
+            border-radius: 10px;
+            transition: 0.3s;
+            text-transform: uppercase;
         }
+
         .tab.active {
-            color: #00ff88;
-            border-bottom: 4px solid #00ff88;
+            color: white;
+            background: var(--card-bg);
+            box-shadow: 0 4px 0 var(--primary);
         }
 
-        .card {
-            background: rgba(255,255,255,0.06);
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .download-item, .web-game-item, .mod-item {
+            padding: 20px;
+            transition: 0.4s;
             display: flex;
-            align-items: center;
-            gap: 20px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(0,255,136,0.3);
-            border-radius: 16px;
-            padding: 16px 22px;
-            margin-bottom: 14px;
-            transition: all 0.3s;
-        }
-        .download-item:hover, .web-game-item:hover, .mod-item:hover {
-            background: #00ff88;
-            color: #000;
-            transform: translateX(8px);
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(5px);
         }
 
-        .thumbnail {
-            width: 90px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.2);
-            flex-shrink: 0;
+        .card-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .no-thumb {
-            width: 90px;
-            height: 90px;
-            background: #222;
+
+        .thumb-box {
+            height: 180px;
+            background: #111;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
-            flex-shrink: 0;
+            font-size: 3.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .info { flex: 1; }
-        .filename, .web-title { 
-            font-size: 1.12rem; 
-            font-weight: 500; 
-            margin-bottom: 4px; 
-            font-family: monospace; 
+        /* Updated to make images fit the box perfectly */
+        .thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            background-color: #000;
         }
-        .size { color: #888; font-size: 0.9rem; }
 
-        .upload-instructions {
-            background: rgba(0, 255, 136, 0.05);
-            border-left: 4px solid #00ff88;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+        .info h3 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+        .info p { margin: 5px 0 0; font-size: 0.9rem; color: #aaa; }
+
+        .btn-row {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
         }
+
+        .play-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            background: var(--primary);
+            color: #000;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .main-layout { display: flex; gap: 40px; }
+        .content-area { flex: 1; }
+        .sidebar { width: 320px; position: sticky; top: 20px; height: fit-content; }
+
+        .sidebar-card {
+            background: linear-gradient(145deg, #161625, #0a0a0c);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+        }
+
         .upload-form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            max-width: 500px;
-            margin: 0 auto 30px auto;
-            padding: 20px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            border: 1px dashed rgba(0,255,136,0.5);
+            gap: 12px;
+            text-align: left;
         }
+
         .upload-form input {
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: #111;
+            background: #000;
+            border: 1px solid #333;
             color: white;
         }
-        .upload-form label { font-size: 0.9rem; color: #00ff88; font-weight: 600; }
 
-        .sidebar-card {
-            background: rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(0,255,136,0.2);
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; position: static; }
+            h1 { font-size: 2.8rem; }
         }
-        .try-title {
-            color: #00ff88;
-            font-size: 1.35rem;
-            margin-bottom: 15px;
-        }
-        .random-game {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .random-game .no-thumb {
-            width: 130px;
-            height: 130px;
-            font-size: 3.5rem;
-            margin-bottom: 12px;
-        }
-        .play-btn {
-            background: #00ff88;
-            color: #000;
-            padding: 14px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            margin-top: 10px;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .contact {
-            text-align: center;
-            margin-top: 60px;
-            padding: 30px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .contact a { color: #00ff88; text-decoration: none; }
-
-        footer { text-align: center; margin-top: 40px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Keith Valley Games</h1>
-            <p class="subtitle">Play • Download • Enjoy</p>
         </header>
 
-        <a href="https://bizbobotwitch.github.io/Chat/" target="_blank" class="chat-button">
-            💬 Join Keith Valley Chat
-        </a>
-
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search games..." onkeyup="filterGames()">
+            <input type="text" id="searchInput" placeholder="Search for games..." onkeyup="filterGames()">
         </div>
 
-        <div class="main-content">
-            <div class="downloads-section">
+        <div class="main-layout">
+            <div class="content-area">
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab(0)">⬇️ Games</div>
-                    <div class="tab" onclick="switchTab(1)">🌐 Web</div>
-                    <div class="tab" onclick="switchTab(2)">🛠️ TABS Mods</div>
+                    <div class="tab active" onclick="switchTab(0)">Downloadable</div>
+                    <div class="tab" onclick="switchTab(1)">Web Games</div>
+                    <div class="tab" onclick="switchTab(2)">TABS Mods</div>
                 </div>
 
-                <div id="download-section" class="card">
-                    <div id="status" class="loading" style="text-align:center; padding:40px; color:#888;">Connecting to Repository...</div>
-                    <div id="download-list"></div>
+                <div id="download-section">
+                    <div id="status" style="text-align:center; padding:50px;">Connecting to Archives...</div>
+                    <div id="download-list" class="game-grid"></div>
                 </div>
 
-                <div id="web-section" class="card" style="display: none;">
-                    <div id="web-games-list"></div>
+                <div id="web-section" style="display: none;">
+                    <div id="web-games-list" class="game-grid"></div>
                 </div>
 
-                <div id="mod-section" class="card" style="display: none;">
-                    <div class="upload-instructions">
-                        <strong style="color:#00ff88;">How to Share:</strong><br>
-                        1. Enter mod info below.<br>
-                        2. Click Submit to open a GitHub Issue.<br>
-                        3. Drag your file into the box on GitHub and post it!<br>
-                        <em>We review every mod for safety.</em>
-                    </div>
-
-                    <div class="upload-form">
-                        <label>Mod Name</label>
-                        <input type="text" id="modName" placeholder="e.g. Laser Eyes Mod">
-                        
-                        <label>Your Username</label>
-                        <input type="text" id="modAuthor" placeholder="Creator Name">
-                        
-                        <button onclick="submitMod()" class="play-btn">Submit via GitHub</button>
-                    </div>
-
-                    <div id="mods-list">
-                        <h2 style="color: #00ff88;">Verified Community Mods</h2>
-                        <div id="mod-items-container">
-                             <p style="text-align:center; color:#888;">No mods verified yet. Be the first!</p>
+                <div id="mod-section" style="display: none;">
+                    <div class="sidebar-card" style="width:100%; box-sizing: border-box;">
+                        <h2 style="color:var(--primary)">Submit TABS Mod</h2>
+                        <div class="upload-form">
+                            <input type="text" id="modName" placeholder="Mod Title">
+                            <input type="text" id="modAuthor" placeholder="Creator Handle">
+                            <button onclick="submitMod()" class="play-btn">Submit via GitHub</button>
                         </div>
                     </div>
                 </div>
@@ -289,18 +237,11 @@
 
             <div class="sidebar">
                 <div class="sidebar-card">
-                    <div class="try-title">🎲 Try This Game?</div>
-                    <div id="random-game" class="random-game"></div>
+                    <h3 style="color:var(--secondary); margin-top:0;">Daily Feature</h3>
+                    <div id="random-game"></div>
                 </div>
             </div>
         </div>
-
-        <div class="contact">
-            <h2 style="margin: 0 0 15px 0; color: #00ff88;">Contact Us</h2>
-            <p>Email: <a href="mailto:Bizbobotwitch1@gmail.com">Bizbobotwitch1@gmail.com</a></p>
-        </div>
-
-        <footer>Made with ❤️ for the Keith Valley community</footer>
     </div>
 
     <script>
@@ -308,58 +249,38 @@
         let downloadableGames = [];
 
         const webGames = [
+            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "War simulator (Downloadable available)", thumb: "⚔️" },
             { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", description: "Fast-paced racing game", thumb: "🏎️" },
             { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig!", thumb: "🐷" },
-            { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Bouncing challenge", thumb: "⚽" },
-            { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Circle puzzle", thumb: "⭕" },
-            { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", description: "Life sim", thumb: "🧬" },
-            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "Endless runner", thumb: "🏂" },
-            { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", description: "Survive!", thumb: "💀" },
-            { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", description: "Drift king", thumb: "🏎️" },
-            { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", description: "Physics rocket", thumb: "🚀" },
-            { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "War sim", thumb: "⚔️" },
-            { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Numbers", thumb: "🔢" },
-            { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "Cookies!", thumb: "🍪" }
+            { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", description: "Timing challenge", thumb: "⚽" },
+            { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", description: "Addictive puzzle", thumb: "⭕" },
+            { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", description: "Endless neon runner", thumb: "🏂" },
+            { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "Idle classic", thumb: "🍪" }
         ];
-
-        function getRandomThumbnail(normalThumb) {
-            return (Math.random() < 1/200) ? "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png" : normalThumb;
-        }
 
         async function fetchGames() {
             const status = document.getElementById('status');
             try {
                 const res = await fetch(`https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games`);
-                if (!res.ok) throw new Error("Release not found");
-                
+                if (!res.ok) throw new Error();
                 const release = await res.json();
                 status.style.display = 'none';
 
                 const images = {};
-                const gameFiles = [];
-
                 release.assets.forEach(asset => {
-                    const name = asset.name;
-                    const lowerName = name.toLowerCase();
-
-                    if (lowerName.match(/\.(png|jpg|jpeg|webp)$/)) {
-                        const key = name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim().toLowerCase();
+                    if (asset.name.match(/\.(png|jpg|jpeg|webp)$/i)) {
+                        const key = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").toLowerCase().trim();
                         images[key] = asset.browser_download_url;
-                    } else {
-                        gameFiles.push(asset);
                     }
                 });
 
-                downloadableGames = gameFiles.map(asset => {
+                downloadableGames = release.assets.filter(a => !a.name.match(/\.(png|jpg|jpeg|webp)$/i)).map(asset => {
                     const cleanTitle = asset.name.replace(/\.[^/.]+$/, "").replace(/-KVGAMES/gi, "").trim();
-                    const matchKey = cleanTitle.toLowerCase();
-
                     return {
                         title: cleanTitle,
                         url: asset.browser_download_url,
-                        description: (asset.size / (1024*1024)).toFixed(1) + " MB",
-                        type: "download",
-                        thumbUrl: images[matchKey] || null
+                        description: (asset.size / (1024*1024)).toFixed(1) + " MB • Extract Required",
+                        thumbUrl: images[cleanTitle.toLowerCase()]
                     };
                 });
 
@@ -367,54 +288,48 @@
                 renderDownloadableGames();
                 renderWebGames();
                 showRandomGame();
-            } catch (e) { 
-                status.innerHTML = "Sync Error: Could not find 'Games' release on GitHub.";
-                console.error(e);
-            }
+            } catch (e) { status.innerHTML = "Sync Error: Check GitHub Release."; }
         }
 
         function renderDownloadableGames(filtered = null) {
             const list = document.getElementById('download-list');
             list.innerHTML = '';
-            const data = filtered || downloadableGames;
-            
-            if (data.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:#888;">No games matching your search.</p>';
-                return;
-            }
-
-            data.forEach(game => {
-                const isZadmin = game.title.toLowerCase().includes('zadmin');
-                const thumb = getRandomThumbnail(game.thumbUrl);
-                const item = document.createElement('div');
-                item.className = 'download-item';
-                item.innerHTML = `
-                    ${thumb ? `<img src="${thumb}" class="thumbnail">` : `<div class="no-thumb">🎮</div>`}
-                    <div class="info"><div class="filename">${game.title}</div><div class="size">${game.description}</div></div>
-                    ${isZadmin ? `<button onclick="checkPass('${game.url}')" class="play-btn" style="background:#ff5555;color:white;">Locked</button>` : 
-                    `<a href="${game.url}" target="_blank" onclick="alert('Note: Extract the folder before playing!')" class="play-btn">Download</a>`}
+            (filtered || downloadableGames).forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'card-item';
+                card.innerHTML = `
+                    <div class="thumb-box">
+                        ${game.thumbUrl ? `<img src="${game.thumbUrl}" class="thumb-img">` : `🎮`}
+                    </div>
+                    <div class="info">
+                        <h3>${game.title}</h3>
+                        <p>${game.description}</p>
+                    </div>
+                    <div class="btn-row">
+                        <a href="${game.url}" class="play-btn">DOWNLOAD</a>
+                    </div>
                 `;
-                list.appendChild(item);
+                list.appendChild(card);
             });
         }
 
         function renderWebGames() {
             const list = document.getElementById('web-games-list');
-            list.innerHTML = '<h2 style="color:#00ff88; margin-top:0;">🌐 Play Online</h2>';
             webGames.forEach(game => {
-                const item = document.createElement('div');
-                item.className = 'web-game-item';
-                item.innerHTML = `<div class="no-thumb">${game.thumb}</div><div class="info"><div class="web-title">${game.title}</div><div class="size">${game.description}</div></div><a href="${game.url}" target="_blank" class="play-btn">Play</a>`;
-                list.appendChild(item);
+                const card = document.createElement('div');
+                card.className = 'card-item';
+                card.innerHTML = `
+                    <div class="thumb-box">${game.thumb}</div>
+                    <div class="info">
+                        <h3>${game.title}</h3>
+                        <p>${game.description}</p>
+                    </div>
+                    <div class="btn-row">
+                        <a href="${game.url}" target="_blank" class="play-btn" style="background:var(--secondary)">PLAY NOW</a>
+                    </div>
+                `;
+                list.appendChild(card);
             });
-        }
-
-        function submitMod() {
-            const name = document.getElementById('modName').value;
-            const author = document.getElementById('modAuthor').value;
-            if(!name || !author) return alert("Mod Name and Author are required!");
-            const body = encodeURIComponent(`Mod: ${name}\nAuthor: ${author}\n\n[ADMIN: DRAG MOD FILE HERE]`);
-            window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=TABS Mod: ${name}&body=${body}`, '_blank');
         }
 
         function switchTab(n) {
@@ -429,13 +344,20 @@
             renderDownloadableGames(downloadableGames.filter(g => g.title.toLowerCase().includes(q)));
         }
 
-        function checkPass(url) { if(prompt("Access Key:") === "112111") window.open(url); else alert("Incorrect"); }
-
         function showRandomGame() {
-            const container = document.getElementById('random-game');
-            if (allGames.length === 0) return;
+            const target = document.getElementById('random-game');
+            if(allGames.length === 0) return;
             const game = allGames[Math.floor(Math.random() * allGames.length)];
-            container.innerHTML = `<div class="no-thumb">${game.thumb || '🎮'}</div><div style="margin:10px 0; font-weight:700;">${game.title}</div><a href="${game.url}" target="_blank" class="play-btn">Try This</a>`;
+            target.innerHTML = `
+                <div style="font-size:3rem; margin:15px 0;">${game.thumb || '🕹️'}</div>
+                <h4 style="margin:10px 0; color:var(--primary)">${game.title}</h4>
+                <a href="${game.url}" target="_blank" class="play-btn" style="display:block">TRY THIS</a>
+            `;
+        }
+
+        function submitMod() {
+            const name = document.getElementById('modName').value;
+            window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=Mod Submission: ${name}`, '_blank');
         }
 
         window.onload = fetchGames;
