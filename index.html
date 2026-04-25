@@ -247,8 +247,8 @@
         let allGames = [];
         let downloadableGames = [];
 
-        // RESTORED ALL WEB GAMES
         const webGames = [
+            { title: "Keith Valley Fisher", url: "https://bizbobotwitch.github.io/Keith-Valley-Fisher/", description: "Fishing adventure game", thumb: "🎣" },
             { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", description: "Fast-paced racing game", thumb: "🏎️" },
             { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", description: "War simulator (Downloadable available)", thumb: "⚔️" },
             { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", description: "Block the pig!", thumb: "🐷" },
@@ -320,7 +320,7 @@
 
         function renderWebGames() {
             const list = document.getElementById('web-games-list');
-            list.innerHTML = ''; // Clear first
+            list.innerHTML = '';
             webGames.forEach(game => {
                 const card = document.createElement('div');
                 card.className = 'card-item';
