@@ -98,6 +98,26 @@
             text-transform: uppercase;
         }
 
+        .chat-btn {
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--neon);
+            color: var(--neon);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-btn:hover {
+            background: var(--neon);
+            color: var(--void);
+            box-shadow: 0 0 15px var(--neon);
+        }
+
         .hero {
             position: relative;
             z-index: 1;
@@ -271,6 +291,7 @@
 
 <nav class="topbar">
     <div class="topbar-logo">KVG ◈</div>
+    <a href="https://bizbobotwitch.github.io/Chat/" target="_blank" class="chat-btn">💬 Keith Valley Chat</a>
 </nav>
 
 <section class="hero">
@@ -336,6 +357,7 @@
                     <input type="text" id="modAuthor" placeholder="Creator Handle">
                     <button onclick="submitMod()" class="btn-play btn-download" style="padding:13px; text-align:center; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.72rem; letter-spacing:1.5px; border-radius:9px;">Submit via GitHub</button>
                 </div>
+                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 20px;">Don't have GitHub? Use the <a href="javascript:openSuggestionForm()" style="color: var(--ice);">Anonymous Suggestion Form</a>.</p>
             </div>
         </div>
     </div>
@@ -362,7 +384,7 @@
                 </div>
             </div>
             <div style="margin-top: 15px; text-align: center;">
-                <button onclick="window.open('https://github.com/bizbobotwitch/GAME/issues', '_blank')" class="btn-play" style="background: var(--glass); color: var(--muted); font-size: 0.6rem; border: 1px solid var(--glass-border); width: 100%;">Suggest a Game</button>
+                <button onclick="openSuggestionForm()" class="btn-play" style="background: var(--glass); color: var(--muted); font-size: 0.6rem; border: 1px solid var(--glass-border); width: 100%;">Suggest a Game</button>
             </div>
         </div>
 
@@ -397,6 +419,9 @@
     let allGames = [];
     let downloadableGames = [];
 
+    // UPDATED GOOGLE FORM LINK
+    const SUGGESTION_FORM_LINK = "https://docs.google.com/forms/d/e/1FAIpQLSe80XYsgWB4CxQ3zJVvwPr8shd9qOp-nfbKy7AWFJa6Hk3Kvg/viewform?usp=publish-editor";
+
     const webGames = [
         { title: "Keith Valley Fisher", url: "https://bizbobotwitch.github.io/Keith-Valley-Fisher/", description: "Fishing adventure game", thumb: "🎣", tag: "ADVENTURE" },
         { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", description: "Fast-paced racing game", thumb: "🏎️", tag: "RACING" },
@@ -412,6 +437,14 @@
         { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", description: "Classic number puzzle", thumb: "🔢", tag: "PUZZLE" },
         { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "The idle classic", thumb: "🍪", tag: "IDLE" }
     ];
+
+    function openSuggestionForm() {
+        window.open(SUGGESTION_FORM_LINK, '_blank');
+    }
+
+    function getRandomThumbnail(normalThumb) {
+        return (Math.random() < 1/200) ? "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png" : normalThumb;
+    }
 
     function showToast(msg) {
         const t = document.getElementById('toast');
@@ -441,12 +474,13 @@
                 .filter(a => !a.name.match(/\.(png|jpg|jpeg|webp)$/i))
                 .map(asset => {
                     const cleanTitle = asset.name.replace(/\.[^/.]+$/, '').replace(/-KVGAMES/gi, '').trim();
+                    const thumb = getRandomThumbnail(images[cleanTitle.toLowerCase()]);
                     return {
                         title: cleanTitle,
                         url: asset.browser_download_url,
                         sizeMB: (asset.size / (1024*1024)).toFixed(1),
                         description: 'Extract & play',
-                        thumbUrl: images[cleanTitle.toLowerCase()],
+                        thumbUrl: thumb,
                         createdAt: asset.created_at
                     };
                 });
