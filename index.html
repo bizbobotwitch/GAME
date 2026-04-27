@@ -235,28 +235,6 @@
         .coming-name { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text); }
         .coming-status { font-size: 0.65rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; border: 1px solid rgba(255,215,0,0.3); padding: 2px 6px; border-radius: 4px; }
 
-        .mod-form { display: flex; flex-direction: column; gap: 12px; }
-        .mod-form input { padding: 12px 14px; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; color: white; font-family: 'Syne', sans-serif; font-size: 0.9rem; transition: 0.25s; }
-        .mod-form input:focus { outline: none; border-color: rgba(0,255,136,0.4); }
-        .mod-form input::placeholder { color: var(--muted); }
-
-        .mod-hero { border: 1px solid var(--glass-border); border-radius: 20px; padding: 50px 30px; text-align: center; background: var(--glass); }
-        .mod-hero h2 { font-family: 'Orbitron', monospace; font-size: 1.4rem; margin-bottom: 12px; color: var(--neon); }
-        .mod-hero p { color: var(--muted); margin-bottom: 30px; max-width: 400px; margin-left: auto; margin-right: auto; }
-
-        .recent-list { display: flex; flex-direction: column; gap: 10px; }
-        .recent-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); transition: 0.25s; }
-        .recent-item:hover { background: rgba(255,255,255,0.04); }
-        .recent-icon { font-size: 1.4rem; flex-shrink: 0; }
-        .recent-info { flex: 1; min-width: 0; }
-        .recent-name { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .recent-type { font-size: 0.68rem; color: var(--muted); }
-        .recent-badge { font-size: 0.6rem; padding: 2px 7px; border-radius: 4px; font-family: 'Space Mono', monospace; background: rgba(0,255,136,0.1); color: var(--neon); border: 1px solid rgba(0,255,136,0.2); flex-shrink: 0; }
-
-        .empty-state { text-align: center; padding: 60px; color: var(--muted); grid-column: 1 / -1; }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-
-        /* FOOTER STATS STYLING */
         .live-stats {
             display: flex;
             align-items: center;
@@ -281,21 +259,84 @@
             100% { transform: scale(0.9); opacity: 1; }
         }
 
+        /* MODAL STYLING */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #0a0a14;
+            border: 1px solid var(--neon);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,255,136,0.15);
+            animation: modalScale 0.3s ease-out;
+        }
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--neon);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .modal-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text);
+            margin-bottom: 25px;
+        }
+        .modal-body ol { padding-left: 20px; }
+        .modal-body li { margin-bottom: 10px; }
+        .modal-body .tip {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0,180,255,0.05);
+            border-left: 3px solid var(--ice);
+            font-size: 0.85rem;
+            color: var(--ice);
+        }
+        .modal-close-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--neon);
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: #000;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .modal-close-btn:hover { background: #00cc70; transform: translateY(-2px); }
+
         footer { position: relative; z-index: 1; border-top: 1px solid var(--glass-border); padding: 30px 40px; display: flex; align-items: center; justify-content: space-between; }
         .footer-logo { font-family: 'Orbitron', monospace; font-size: 0.8rem; color: var(--muted); letter-spacing: 2px; }
         .footer-links { display: flex; gap: 24px; }
         .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; transition: color 0.25s; }
         .footer-links a:hover { color: var(--neon); }
 
-        .toast { position: fixed; bottom: 30px; right: 30px; background: rgba(0,0,0,0.9); border: 1px solid var(--neon); border-radius: 10px; padding: 14px 20px; font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--neon); z-index: 9998; transform: translateY(80px); opacity: 0; transition: 0.4s ease; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-        .toast.show { transform: translateY(0); opacity: 1; }
-
         @media (max-width: 960px) {
             .page-body { grid-template-columns: 1fr; padding: 0 20px 60px; }
             .sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
             .side-card { flex: 1; min-width: 250px; }
-            .topbar { padding: 12px 20px; }
-            .topbar-logo { font-size: 0.8rem; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
         }
 
@@ -313,6 +354,28 @@
 <div class="glow-orb one"></div>
 <div class="glow-orb two"></div>
 <div class="glow-orb three"></div>
+
+<div class="modal-overlay" id="downloadModal">
+    <div class="modal-content">
+        <div class="modal-header">Important Message</div>
+        <div class="modal-body">
+            <ol>
+                <li>Click download on which game you want.</li>
+                <li>Wait for your file to finish downloading.</li>
+                <li>Once done double click on the file in your download tab.</li>
+                <li>Go to your downloads in file explorer and left click on the file for the game.</li>
+                <li>Click extract all.</li>
+                <li>Open the new extracted file and open it up until you see the application file inside it.</li>
+            </ol>
+            <div class="tip">
+                <strong>7. OPTIONAL BUT USEFUL:</strong><br>
+                Drag the application file to your task bar or wallpaper to get easy access to it instead of going to the file every time over and over.
+            </div>
+            <p style="margin-top:15px; text-align:center; font-weight:700; color:var(--neon)">8. Have fun!</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">Got it, Start Download</button>
+    </div>
+</div>
 
 <nav class="topbar">
     <div class="topbar-logo">KVG ◈</div>
@@ -377,12 +440,7 @@
                 <div style="font-size:3rem; margin-bottom:16px">🛠️</div>
                 <h2>Submit TABS Mod</h2>
                 <p>Submit your Totally Accurate Battle Simulator mod to be featured in the Keith Valley Games collection.</p>
-                <div class="mod-form" style="max-width:360px; margin:0 auto; text-align:left">
-                    <input type="text" id="modName" placeholder="Mod Title">
-                    <input type="text" id="modAuthor" placeholder="Creator Handle">
-                    <button onclick="submitMod()" class="btn-play btn-download" style="padding:13px; text-align:center; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.72rem; letter-spacing:1.5px; border-radius:9px;">Submit via GitHub</button>
-                </div>
-                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 20px;">Don't have GitHub? Use the <a href="javascript:openSuggestionForm()" style="color: var(--ice);">Anonymous Suggestion Form</a>.</p>
+                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 20px;">Use the <a href="javascript:openSuggestionForm()" style="color: var(--ice);">Anonymous Suggestion Form</a> to submit mods or games.</p>
             </div>
         </div>
     </div>
@@ -411,13 +469,6 @@
                 <div style="color:var(--muted); font-size:0.82rem; font-family:'Space Mono',monospace">Loading…</div>
             </div>
         </div>
-
-        <div class="side-card">
-            <div class="side-card-title">◈ Recently Added</div>
-            <div class="recent-list" id="recent-list">
-                <div style="color:var(--muted); font-size:0.8rem; font-family:'Space Mono',monospace">Loading…</div>
-            </div>
-        </div>
     </aside>
 </div>
 
@@ -432,15 +483,13 @@
     <div class="footer-links">
         <a href="https://github.com/bizbobotwitch/GAME" target="_blank">GitHub</a>
         <a href="https://github.com/bizbobotwitch/GAME/releases" target="_blank">Releases</a>
-        <a href="https://github.com/bizbobotwitch/GAME/issues" target="_blank">Report Issue</a>
     </div>
 </footer>
-
-<div class="toast" id="toast"></div>
 
 <script>
     let allGames = [];
     let downloadableGames = [];
+    let pendingUrl = null;
 
     const SUGGESTION_FORM_LINK = "https://docs.google.com/forms/d/e/1FAIpQLSe80XYsgWB4CxQ3zJVvwPr8shd9qOp-nfbKy7AWFJa6Hk3Kvg/viewform?usp=publish-editor";
 
@@ -460,54 +509,50 @@
         { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", description: "The idle classic", thumb: "🍪", tag: "IDLE" }
     ];
 
-    function openSuggestionForm() {
-        window.open(SUGGESTION_FORM_LINK, '_blank');
+    function openSuggestionForm() { window.open(SUGGESTION_FORM_LINK, '_blank'); }
+
+    function triggerDownload(url) {
+        pendingUrl = url;
+        document.getElementById('downloadModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('downloadModal').style.display = 'none';
+        if (pendingUrl) {
+            window.location.href = pendingUrl;
+            pendingUrl = null;
+        }
     }
 
     function getRandomThumbnail(normalThumb) {
         return (Math.random() < 1/200) ? "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png" : normalThumb;
     }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2800);
-    }
-
-    /* AUTHENTIC LIVE TRACKER (PULSE LOGIC) */
+    /* TRACKER SET TO 2 SECONDS (2000ms) */
     function initLiveTracker() {
         const liveEl = document.getElementById('real-live-count');
         const namespace = "kvg-live-tracker";
         const key = "active-sessions";
-
-        // We use a "Pulse" logic. Every visitor updates a timestamp on a public API.
-        // We then count how many "Pulses" occurred in the last 2 minutes.
         function pulse() {
             fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
                 .then(res => res.json())
                 .then(data => {
-                    // Logic: Since we can't get a list of active users, 
-                    // we show a realistic number based on recent activity frequency.
-                    let count = Math.floor(data.value / 5000); // Scale total hits to a "live" feel
+                    let count = Math.floor(data.value / 1000); // Dynamic scale
                     liveEl.textContent = Math.max(1, count % 5 + 1); 
                 })
                 .catch(() => liveEl.textContent = "1");
         }
-
         pulse();
-        setInterval(pulse, 30000); // Pulse every 30 seconds
+        setInterval(pulse, 2000); 
     }
 
     async function fetchGames() {
         const status = document.getElementById('status');
         try {
             const res = await fetch('https://api.github.com/repos/bizbobotwitch/GAME/releases/tags/Games');
-            if (!res.ok) throw new Error(`GitHub API returned status ${res.status}`);
-            
+            if (!res.ok) throw new Error(`GitHub API error`);
             const release = await res.json();
             status.style.display = 'none';
-
             const images = {};
             release.assets.forEach(asset => {
                 if (asset.name.match(/\.(png|jpg|jpeg|webp)$/i)) {
@@ -515,33 +560,27 @@
                     images[key] = asset.browser_download_url;
                 }
             });
-
             downloadableGames = release.assets
                 .filter(a => !a.name.match(/\.(png|jpg|jpeg|webp)$/i))
                 .map(asset => {
                     const cleanTitle = asset.name.replace(/\.[^/.]+$/, '').replace(/-KVGAMES/gi, '').trim();
-                    const thumb = getRandomThumbnail(images[cleanTitle.toLowerCase()]);
                     return {
                         title: cleanTitle,
                         url: asset.browser_download_url,
                         sizeMB: (asset.size / (1024*1024)).toFixed(1),
                         description: 'Extract & play',
-                        thumbUrl: thumb,
+                        thumbUrl: getRandomThumbnail(images[cleanTitle.toLowerCase()]),
                         createdAt: asset.created_at
                     };
                 });
-
         } catch(e) {
-            console.error("Sync Error:", e);
-            status.innerHTML = '<div style="color:var(--hot); padding: 20px; background: rgba(255,58,110,0.1); border-radius: 10px; border: 1px solid rgba(255,58,110,0.3);">⚠ Could not sync downloadable games from GitHub.</div>';
-            downloadableGames = []; 
+            status.innerHTML = '<div style="color:var(--hot)">⚠ Connection Error</div>';
         } finally {
             allGames = [...webGames, ...downloadableGames];
             document.getElementById('stat-games').textContent = allGames.length;
             document.getElementById('dl-count-badge').textContent = downloadableGames.length + ' games';
             renderDownloadableGames();
             renderWebGames();
-            renderRecentList();
             showRandomGame();
         }
     }
@@ -550,23 +589,18 @@
         const list = document.getElementById('download-list');
         list.innerHTML = '';
         const games = filtered || downloadableGames;
-        if (games.length === 0 && document.getElementById('status').style.display === 'none') {
-            list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>No games match your search.</div></div>';
-            return;
-        }
-        games.forEach((game, i) => {
+        games.forEach((game) => {
             const card = document.createElement('div');
             card.className = 'card-item';
-            card.style.animationDelay = (i * 0.05) + 's';
             card.innerHTML = `
-                <div class="thumb-box">${game.thumbUrl ? `<img src="${game.thumbUrl}" class="thumb-img" alt="${game.title}">` : `🎮`}</div>
+                <div class="thumb-box">${game.thumbUrl ? `<img src="${game.thumbUrl}" class="thumb-img">` : `🎮`}</div>
                 <div class="card-body">
-                    <div class="card-tags"><span class="tag">PC</span><span class="tag" style="color:var(--neon); border-color:rgba(0,255,136,0.2); background:rgba(0,255,136,0.07)">FREE</span></div>
+                    <div class="card-tags"><span class="tag">PC</span></div>
                     <div class="card-title">${game.title}</div>
                     <div class="card-desc">${game.description}</div>
                     <div class="card-footer">
                         <span class="card-size">${game.sizeMB} MB</span>
-                        <a href="${game.url}" class="btn-play btn-download" onclick="onDownload('${game.title}')">Download</a>
+                        <button onclick="triggerDownload('${game.url}')" class="btn-play btn-download">Download</button>
                     </div>
                 </div>`;
             list.appendChild(card);
@@ -576,38 +610,21 @@
     function renderWebGames() {
         const list = document.getElementById('web-games-list');
         list.innerHTML = '';
-        webGames.forEach((game, i) => {
+        webGames.forEach(game => {
             const card = document.createElement('div');
             card.className = 'card-item';
-            card.style.animationDelay = (i * 0.05) + 's';
             card.innerHTML = `
                 <div class="thumb-box">${game.thumb}</div>
                 <div class="card-body">
-                    <div class="card-tags"><span class="tag">${game.tag || 'WEB'}</span><span class="tag" style="color:var(--ice); border-color:rgba(0,180,255,0.2); background:rgba(0,180,255,0.07)">BROWSER</span></div>
+                    <div class="card-tags"><span class="tag">${game.tag}</span></div>
                     <div class="card-title">${game.title}</div>
                     <div class="card-desc">${game.description}</div>
                     <div class="card-footer">
-                        <span class="card-size">No install required</span>
                         <a href="${game.url}" target="_blank" class="btn-play btn-play-web">Play Now</a>
                     </div>
                 </div>`;
             list.appendChild(card);
         });
-    }
-
-    function renderRecentList() {
-        const el = document.getElementById('recent-list');
-        const sorted = [...downloadableGames].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-        if (sorted.length === 0) { el.innerHTML = '<div style="color:var(--muted); font-size:0.8rem">Nothing to display.</div>'; return; }
-        el.innerHTML = sorted.map(g => `
-            <div class="recent-item">
-                <div class="recent-icon">🎮</div>
-                <div class="recent-info">
-                    <div class="recent-name">${g.title}</div>
-                    <div class="recent-type">${g.sizeMB} MB</div>
-                </div>
-                <span class="recent-badge">NEW</span>
-            </div>`).join('');
     }
 
     function showRandomGame() {
@@ -618,11 +635,8 @@
         target.innerHTML = `
             <span class="feature-emoji">${game.thumb || '🕹️'}</span>
             <div class="feature-title">${game.title}</div>
-            <div class="feature-desc">${game.description}</div>
-            <a href="${game.url}" ${isWeb ? 'target="_blank"' : ''} class="btn-feature">${isWeb ? 'Play Now' : 'Download'}</a>`;
+            <button onclick="${isWeb ? `window.open('${game.url}')` : `triggerDownload('${game.url}')`}" class="btn-feature">${isWeb ? 'Play Now' : 'Download'}</button>`;
     }
-
-    function onDownload(title) { showToast(`⬇ Downloading ${title}…`); }
 
     function switchTab(n) {
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
@@ -633,20 +647,10 @@
 
     function filterGames() {
         const q = document.getElementById('searchInput').value.toLowerCase().trim();
-        if (q === '') { renderDownloadableGames(); } 
-        else { renderDownloadableGames(downloadableGames.filter(g => g.title.toLowerCase().includes(q) || g.description.toLowerCase().includes(q))); }
+        renderDownloadableGames(q === '' ? null : downloadableGames.filter(g => g.title.toLowerCase().includes(q)));
     }
 
-    function submitMod() {
-        const name = document.getElementById('modName').value.trim();
-        if (!name) { showToast('Enter a mod title first.'); return; }
-        window.open(`https://github.com/bizbobotwitch/GAME/issues/new?title=Mod%20Submission%3A%20${encodeURIComponent(name)}`, '_blank');
-    }
-
-    window.onload = () => {
-        fetchGames();
-        initLiveTracker();
-    };
+    window.onload = () => { fetchGames(); initLiveTracker(); };
 </script>
 </body>
 </html>
