@@ -388,7 +388,7 @@
         <span class="line1">Keith Valley</span>
         <span class="line2">Games</span>
     </h1>
-    <p class="hero-sub">A collection of downloadable games, web games, and TABS mods — all in one place.</p>
+    <p class="hero-sub">A collection of downloadable games and web games — all in one place.</p>
 
     <div class="stats-bar">
         <div class="stat-item">
@@ -412,7 +412,6 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab(0)">Downloadable</button>
             <button class="tab" onclick="switchTab(1)">Web Games</button>
-            <button class="tab" onclick="switchTab(2)">TABS Mods</button>
         </div>
 
         <div id="download-section">
@@ -433,15 +432,6 @@
                 <span class="game-count-badge">13 games</span>
             </div>
             <div id="web-games-list" class="game-grid"></div>
-        </div>
-
-        <div id="mod-section" style="display:none">
-            <div class="mod-hero">
-                <div style="font-size:3rem; margin-bottom:16px">🛠️</div>
-                <h2>Submit TABS Mod</h2>
-                <p>Submit your Totally Accurate Battle Simulator mod to be featured in the Keith Valley Games collection.</p>
-                <p style="font-size: 0.75rem; color: var(--muted); margin-top: 20px;">Use the <a href="javascript:openSuggestionForm()" style="color: var(--ice);">Anonymous Suggestion Form</a> to submit mods or games.</p>
-            </div>
         </div>
     </div>
 
@@ -528,7 +518,6 @@
         return (Math.random() < 1/200) ? "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png" : normalThumb;
     }
 
-    /* TRACKER SET TO 2 SECONDS (2000ms) */
     function initLiveTracker() {
         const liveEl = document.getElementById('real-live-count');
         const namespace = "kvg-live-tracker";
@@ -537,7 +526,7 @@
             fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
                 .then(res => res.json())
                 .then(data => {
-                    let count = Math.floor(data.value / 1000); // Dynamic scale
+                    let count = Math.floor(data.value / 1000); 
                     liveEl.textContent = Math.max(1, count % 5 + 1); 
                 })
                 .catch(() => liveEl.textContent = "1");
@@ -642,7 +631,6 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
         document.getElementById('download-section').style.display = n === 0 ? 'block' : 'none';
         document.getElementById('web-section').style.display = n === 1 ? 'block' : 'none';
-        document.getElementById('mod-section').style.display = n === 2 ? 'block' : 'none';
     }
 
     function filterGames() {
