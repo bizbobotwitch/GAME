@@ -91,6 +91,12 @@
             text-transform: uppercase;
         }
 
+        .chat-btn:hover {
+            background: var(--neon);
+            color: var(--void);
+            box-shadow: 0 0 15px var(--neon);
+        }
+
         .hero {
             position: relative;
             z-index: 1;
@@ -98,11 +104,21 @@
             padding: 80px 20px 60px;
         }
 
+        .hero-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 6px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
         h1 {
             font-family: 'Orbitron', monospace;
             font-size: clamp(2.5rem, 7vw, 6rem);
             font-weight: 900;
             line-height: 1;
+            margin-bottom: 20px;
         }
 
         h1 .line1 { display: block; background: linear-gradient(135deg, #fff 30%, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -111,8 +127,9 @@
         .stats-bar {
             display: flex;
             justify-content: center;
+            gap: 0;
             max-width: 500px;
-            margin: 40px auto 60px;
+            margin: 0 auto 60px;
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             background: var(--glass);
@@ -120,33 +137,51 @@
 
         .stat-item { flex: 1; padding: 20px; text-align: center; border-right: 1px solid var(--glass-border); }
         .stat-item:last-child { border-right: none; }
-        .stat-num { font-family: 'Orbitron', monospace; font-size: 1.8rem; color: var(--neon); display: block; }
-        .stat-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; }
+        .stat-num { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 700; color: var(--neon); display: block; }
+        .stat-lbl { font-size: 0.72rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; display: block; }
 
-        .page-body { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 30px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; }
+        .search-wrap { position: relative; z-index: 1; max-width: 640px; margin: 0 auto 50px; padding: 0 20px; }
+        #searchInput { width: 100%; padding: 18px 20px 18px 52px; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 14px; color: white; font-family: 'Syne', sans-serif; font-size: 1rem; backdrop-filter: blur(10px); transition: 0.3s; }
+        #searchInput:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,255,136,0.1), inset 0 0 20px rgba(0,255,136,0.03); }
+        
+        .search-icon { position: absolute; left: 38px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem; }
+
+        .page-body { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 30px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
 
         .tabs { display: flex; gap: 4px; margin-bottom: 30px; background: rgba(0,0,0,0.4); border-radius: 14px; padding: 6px; border: 1px solid var(--glass-border); }
-        .tab { flex: 1; padding: 12px; font-family: 'Syne'; font-weight: 600; cursor: pointer; border-radius: 10px; border: none; background: transparent; color: var(--muted); text-transform: uppercase; }
-        .tab.active { background: rgba(0,255,136,0.1); color: white; border: 1px solid rgba(0,255,136,0.2); }
+        .tab { flex: 1; padding: 12px 20px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 10px; border: none; background: transparent; color: var(--muted); transition: 0.3s; text-align: center; }
+        .tab.active { background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,180,255,0.1)); color: white; border: 1px solid rgba(0,255,136,0.25); text-shadow: 0 0 12px rgba(0,255,136,0.4); }
+        .tab:hover:not(.active) { color: #aaa; background: rgba(255,255,255,0.04); }
 
         .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
-        .card-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
-        .thumb-box { height: 165px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .thumb-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease; }
+        .card-item:hover { transform: translateY(-8px); border-color: rgba(0,255,136,0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,136,0.1); }
 
-        .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
-        .card-title { font-family: 'Orbitron'; color: white; margin-bottom: 15px; font-size: 0.9rem; }
+        /* IMAGE FIX APPLIED HERE: object-fit: contain ensures nothing is cropped */
+        .thumb-box { height: 165px; background: #080810; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
+        .thumb-box::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6)); pointer-events: none;}
+        .thumb-img { width: 100%; height: 100%; object-fit: contain; background: #000; position: relative; z-index: 1; }
 
-        .btn-play { padding: 10px; border-radius: 9px; font-family: 'Orbitron'; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
-        .btn-download { background: var(--neon); color: #000; transition: 0.3s; }
-        .btn-play-web { background: var(--ice); color: #000; transition: 0.3s; }
+        .card-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .card-tags { display: flex; gap: 6px; }
+        .tag { font-family: 'Space Mono', monospace; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.2); color: var(--ice); letter-spacing: 1px; text-transform: uppercase; }
+        .card-title { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: white; line-height: 1.2; }
+        .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; flex: 1; }
+        .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--glass-border); }
+
+        .btn-play { display: inline-block; padding: 10px 22px; border-radius: 9px; font-family: 'Orbitron', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-decoration: none; text-transform: uppercase; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-download { background: linear-gradient(135deg, var(--neon), #00cc70); color: #000; }
+        .btn-download:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,255,136,0.35); }
+        .btn-play-web { background: linear-gradient(135deg, var(--ice), #007fd4); color: #fff; }
+        .btn-play-web:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,180,255,0.35); }
 
         /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #0a0a14; border: 1px solid var(--neon); border-radius: 20px; max-width: 500px; padding: 30px; box-shadow: 0 0 30px rgba(0,255,136,0.2); }
 
         footer { border-top: 1px solid var(--glass-border); padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .live-dot { height: 8px; width: 8px; background: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; margin-right: 8px; }
+        .live-dot { height: 8px; width: 8px; background: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; margin-right: 8px; box-shadow: 0 0 10px var(--neon); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         @media (max-width: 960px) { .page-body { grid-template-columns: 1fr; } .sidebar { position: static; } }
@@ -158,19 +193,22 @@
 
 <div class="modal-overlay" id="downloadModal">
     <div class="modal-content">
-        <h2 style="color:var(--neon); font-family:'Orbitron'; margin-bottom:15px; font-size:1.1rem;">Important Message</h2>
-        <div style="color:white; line-height:1.6; font-size:0.85rem;">
-            <ol style="padding-left:20px;">
-                <li>Click download on which game you want.</li>
-                <li>Wait for your file to finish downloading.</li>
-                <li>Once done double click on the file in your download tab.</li>
-                <li>Go to your downloads in file explorer and left click on the file for the game.</li>
-                <li>Click extract all.</li>
+        <h2 style="color:var(--neon); font-family:'Orbitron'; margin-bottom:15px; font-size:1.2rem; letter-spacing: 1px;">Important Message</h2>
+        <div style="color:white; line-height:1.6; font-size:0.9rem;">
+            <ol style="padding-left:20px; margin-bottom:15px;">
+                <li style="margin-bottom: 8px;">Click download on which game you want.</li>
+                <li style="margin-bottom: 8px;">Wait for your file to finish downloading.</li>
+                <li style="margin-bottom: 8px;">Once done double click on the file in your download tab.</li>
+                <li style="margin-bottom: 8px;">Go to your downloads in file explorer and left click on the file for the game.</li>
+                <li style="margin-bottom: 8px;">Click extract all.</li>
                 <li>Open the new extracted file and open it up until you see the application file inside it.</li>
             </ol>
-            <p style="margin-top:15px; color:var(--neon); text-align:center; font-weight:bold;">8. Have fun!</p>
+            <div style="background:rgba(0,180,255,0.1); border-left:3px solid var(--ice); padding:12px; font-size:0.85rem; color:var(--ice);">
+                <strong>7. OPTIONAL BUT USEFUL:</strong> Drag the application file to your task bar or wallpaper to get easy access to it instead of going to the file every time over and over.
+            </div>
+            <p style="margin-top:15px; color:var(--neon); text-align:center; font-weight:bold; font-size:1.1rem;">8. Have fun!</p>
         </div>
-        <button class="btn-play btn-download" style="width:100%; margin-top:20px;" onclick="closeModal()">Start Download</button>
+        <button class="btn-play btn-download" style="width:100%; margin-top:20px; padding:15px;" onclick="closeModal()">Got it, Start Download</button>
     </div>
 </div>
 
@@ -180,15 +218,21 @@
 </nav>
 
 <section class="hero">
+    <div class="hero-eyebrow">Est. by Bizbobotwitch</div>
     <h1>
         <span class="line1">Keith Valley</span>
         <span class="line2">Games</span>
     </h1>
     <div class="stats-bar">
         <div class="stat-item"><span class="stat-num" id="stat-web-count">14</span><span class="stat-lbl">Web Games</span></div>
-        <div class="stat-item"><span class="stat-num" id="stat-games">0</span><span class="stat-lbl">Total</span></div>
+        <div class="stat-item"><span class="stat-num" id="stat-games">0</span><span class="stat-lbl">Total Games</span></div>
     </div>
 </section>
+
+<div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search games…" oninput="filterGames()">
+</div>
 
 <div class="page-body">
     <div class="content-area">
@@ -201,16 +245,16 @@
     </div>
 
     <aside>
-        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:20px; border-radius:20px;">
-            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px;">◈ UP AND COMING</h3>
-            <div style="font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:10px;">
-                Binding of Isaac <span style="float:right; color:var(--gold);">Queued</span>
+        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px; letter-spacing: 2px;">◈ UP AND COMING</h3>
+            <div style="font-family:'Space Mono'; font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; margin-bottom:10px; border:1px solid var(--glass-border);">
+                Binding of Isaac <span style="float:right; color:var(--gold); font-size:0.65rem; border:1px solid rgba(255,215,0,0.3); padding:2px 6px; border-radius:4px;">QUEUED</span>
             </div>
-            <div style="font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px; border-radius:8px;">
-                Crossy Road <span style="float:right; color:var(--gold);">Queued</span>
+            <div style="font-family:'Space Mono'; font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid var(--glass-border);">
+                Crossy Road <span style="float:right; color:var(--gold); font-size:0.65rem; border:1px solid rgba(255,215,0,0.3); padding:2px 6px; border-radius:4px;">QUEUED</span>
             </div>
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSe80XYsgWB4CxQ3zJVvwPr8shd9qOp-nfbKy7AWFJa6Hk3Kvg/viewform', '_blank')" 
-                    style="width:100%; margin-top:15px; background:var(--neon); border:none; color:#000; padding:10px; border-radius:8px; cursor:pointer; font-family:'Orbitron'; font-weight:700; font-size:0.65rem; text-transform:uppercase;">
+                    class="btn-play" style="width:100%; margin-top:15px; background:transparent; border:1px solid var(--neon); color:var(--neon); cursor:pointer;">
                 Suggest a Game
             </button>
         </div>
@@ -218,7 +262,7 @@
 </div>
 
 <footer>
-    <div class="footer-logo">KVG ◈ 2025</div>
+    <div class="footer-logo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
     <div style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted);">
         <span class="live-dot"></span>LIVE ONLINE: <span id="real-live-count" style="color:var(--neon)">1</span>
     </div>
@@ -230,20 +274,20 @@
     let typedKeys = "";
 
     const webGames = [
-        { title: "Subway Surfers", url: "https://bizbobotwitch.github.io/druskii128.github.io/subway-surfers.html", thumb: "🏃‍♂️" },
-        { title: "Keith Valley Fisher", url: "https://bizbobotwitch.github.io/Keith-Valley-Fisher/", thumb: "🎣" },
-        { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", thumb: "🏎️" },
-        { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", thumb: "⚔️" },
-        { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", thumb: "🐷" },
-        { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", thumb: "⚽" },
-        { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", thumb: "⭕" },
-        { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", thumb: "🧬" },
-        { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", thumb: "🏂" },
-        { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", thumb: "💀" },
-        { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", thumb: "🏎️" },
-        { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", thumb: "🚀" },
-        { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", thumb: "🔢" },
-        { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", thumb: "🍪" }
+        { title: "Subway Surfers", url: "https://bizbobotwitch.github.io/druskii128.github.io/subway-surfers.html", thumb: "🏃‍♂️", tag: "ARCADE" },
+        { title: "Keith Valley Fisher", url: "https://bizbobotwitch.github.io/Keith-Valley-Fisher/", thumb: "🎣", tag: "ADVENTURE" },
+        { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", thumb: "🏎️", tag: "RACING" },
+        { title: "Ages of Conflict", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/ages-of-conflict/index.html", thumb: "⚔️", tag: "STRATEGY" },
+        { title: "Piggy Escape", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/block-the-pig/index.html", thumb: "🐷", tag: "PUZZLE" },
+        { title: "Core Ball", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/core-ball/index.html", thumb: "⚽", tag: "ARCADE" },
+        { title: "CircleoO", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/circlo/index.html", thumb: "⭕", tag: "PUZZLE" },
+        { title: "BitLife", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/bitlife/index.html", thumb: "🧬", tag: "SIM" },
+        { title: "Slope", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/slope/index.html", thumb: "🏂", tag: "RUNNER" },
+        { title: "Death Run 3D", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/death-run-3d/index.html", thumb: "💀", tag: "ACTION" },
+        { title: "Drift Boss", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/drift-boss/index.html", thumb: "🏎️", tag: "RACING" },
+        { title: "Rocketpult", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/rocketpult/index.html", thumb: "🚀", tag: "PHYSICS" },
+        { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", thumb: "🔢", tag: "PUZZLE" },
+        { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", thumb: "🍪", tag: "IDLE" }
     ];
 
     function triggerDownload(url) { pendingUrl = url; document.getElementById('downloadModal').style.display = 'flex'; }
@@ -295,7 +339,7 @@
                     }
                     if(Math.random() < 1/200) thumb = "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
 
-                    return { title, url: asset.browser_download_url, thumb };
+                    return { title, url: asset.browser_download_url, size: (asset.size / 1048576).toFixed(1), thumb };
                 });
 
             document.getElementById('stat-games').textContent = downloadableGames.length + webGames.length;
@@ -304,13 +348,23 @@
         } catch(e) { console.error(e); }
     }
 
-    function renderDownloadableGames() {
-        document.getElementById('download-list').innerHTML = downloadableGames.map(g => `
+    function renderDownloadableGames(filtered = null) {
+        const list = document.getElementById('download-list');
+        const games = filtered || downloadableGames;
+        list.innerHTML = games.map(g => `
             <div class="card-item">
-                <div class="thumb-box">${g.thumb ? `<img src="${g.thumb}" class="thumb-img">` : `<span style="font-size:2rem">🎮</span>`}</div>
+                <div class="thumb-box">${g.thumb ? `<img src="${g.thumb}" class="thumb-img">` : `<span style="font-size:2rem; position:relative; z-index:2;">🎮</span>`}</div>
                 <div class="card-body">
+                    <div class="card-tags">
+                        <span class="tag">PC</span>
+                        <span class="tag" style="color:var(--neon); border-color:rgba(0,255,136,0.2); background:rgba(0,255,136,0.07)">FREE</span>
+                    </div>
                     <div class="card-title">${g.title}</div>
-                    <button onclick="triggerDownload('${g.url}')" class="btn-play btn-download" style="width:100%">Download</button>
+                    <div class="card-desc">Extract & play</div>
+                    <div class="card-footer">
+                        <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">${g.size} MB</span>
+                        <button onclick="triggerDownload('${g.url}')" class="btn-play btn-download">Download</button>
+                    </div>
                 </div>
             </div>`).join('');
     }
@@ -318,10 +372,18 @@
     function renderWebGames() {
         document.getElementById('web-games-list').innerHTML = webGames.map(g => `
             <div class="card-item">
-                <div class="thumb-box" style="font-size:3rem">${g.thumb}</div>
+                <div class="thumb-box" style="font-size:3rem; position:relative; z-index:2;">${g.thumb}</div>
                 <div class="card-body">
+                    <div class="card-tags">
+                        <span class="tag">${g.tag}</span>
+                        <span class="tag" style="color:var(--ice); border-color:rgba(0,180,255,0.2); background:rgba(0,180,255,0.07)">BROWSER</span>
+                    </div>
                     <div class="card-title">${g.title}</div>
-                    <a href="${g.url}" target="_blank" class="btn-play btn-play-web" style="text-align:center; text-decoration:none">Play Now</a>
+                    <div class="card-desc">No install required</div>
+                    <div class="card-footer">
+                        <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">Instant</span>
+                        <a href="${g.url}" target="_blank" class="btn-play btn-play-web" style="text-align:center; text-decoration:none">Play Now</a>
+                    </div>
                 </div>
             </div>`).join('');
     }
@@ -330,6 +392,11 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
         document.getElementById('download-section').style.display = n === 0 ? 'block' : 'none';
         document.getElementById('web-section').style.display = n === 1 ? 'block' : 'none';
+    }
+
+    function filterGames() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        renderDownloadableGames(q === '' ? null : downloadableGames.filter(g => g.title.toLowerCase().includes(q)));
     }
 
     window.onload = () => { fetchGames(); initLiveTracker(); };
