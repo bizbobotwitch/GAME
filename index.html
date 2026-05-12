@@ -143,6 +143,7 @@
         .search-wrap { position: relative; z-index: 1; max-width: 640px; margin: 0 auto 50px; padding: 0 20px; }
         #searchInput { width: 100%; padding: 18px 20px 18px 52px; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 14px; color: white; font-family: 'Syne', sans-serif; font-size: 1rem; backdrop-filter: blur(10px); transition: 0.3s; }
         #searchInput:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,255,136,0.1), inset 0 0 20px rgba(0,255,136,0.03); }
+        
         .search-icon { position: absolute; left: 38px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem; }
 
         .page-body { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 30px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
@@ -150,26 +151,29 @@
         .tabs { display: flex; gap: 4px; margin-bottom: 30px; background: rgba(0,0,0,0.4); border-radius: 14px; padding: 6px; border: 1px solid var(--glass-border); }
         .tab { flex: 1; padding: 12px 20px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.82rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 10px; border: none; background: transparent; color: var(--muted); transition: 0.3s; text-align: center; }
         .tab.active { background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,180,255,0.1)); color: white; border: 1px solid rgba(0,255,136,0.25); text-shadow: 0 0 12px rgba(0,255,136,0.4); }
+        .tab:hover:not(.active) { color: #aaa; background: rgba(255,255,255,0.04); }
 
         .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
-        .card-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.35s ease, border-color 0.35s ease; }
-        .card-item:hover { transform: translateY(-8px); border-color: rgba(0,255,136,0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        
+        .card-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease; }
+        .card-item:hover { transform: translateY(-8px); border-color: rgba(0,255,136,0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,136,0.1); }
 
-        /* IMAGE FITMENT: contain ensures logos and artwork aren't cut off */
         .thumb-box { height: 165px; background: #080810; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
-        .thumb-box::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6)); pointer-events: none; }
+        .thumb-box::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6)); pointer-events: none;}
         .thumb-img { width: 100%; height: 100%; object-fit: contain; background: #000; position: relative; z-index: 1; }
 
         .card-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
         .card-tags { display: flex; gap: 6px; }
-        .tag { font-family: 'Space Mono', monospace; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.2); color: var(--ice); text-transform: uppercase; }
+        .tag { font-family: 'Space Mono', monospace; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,180,255,0.1); border: 1px solid rgba(0,180,255,0.2); color: var(--ice); letter-spacing: 1px; text-transform: uppercase; }
         .card-title { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: white; line-height: 1.2; }
         .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; flex: 1; }
         .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--glass-border); }
 
         .btn-play { display: inline-block; padding: 10px 22px; border-radius: 9px; font-family: 'Orbitron', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-decoration: none; text-transform: uppercase; cursor: pointer; border: none; transition: 0.3s; }
         .btn-download { background: linear-gradient(135deg, var(--neon), #00cc70); color: #000; }
+        .btn-download:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,255,136,0.35); }
         .btn-play-web { background: linear-gradient(135deg, var(--ice), #007fd4); color: #fff; }
+        .btn-play-web:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,180,255,0.35); }
 
         /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -188,7 +192,7 @@
 
 <div class="modal-overlay" id="downloadModal">
     <div class="modal-content">
-        <h2 style="color:var(--neon); font-family:'Orbitron'; margin-bottom:15px; font-size:1.2rem;">Important Message</h2>
+        <h2 style="color:var(--neon); font-family:'Orbitron'; margin-bottom:15px; font-size:1.2rem; letter-spacing: 1px;">Important Message</h2>
         <div style="color:white; line-height:1.6; font-size:0.9rem;">
             <ol style="padding-left:20px; margin-bottom:15px;">
                 <li style="margin-bottom: 8px;">Click download on which game you want.</li>
@@ -199,9 +203,9 @@
                 <li>Open the new extracted file and open it up until you see the application file inside it.</li>
             </ol>
             <div style="background:rgba(0,180,255,0.1); border-left:3px solid var(--ice); padding:12px; font-size:0.85rem; color:var(--ice);">
-                <strong>7. OPTIONAL BUT USEFUL:</strong> Drag the application to your taskbar or wallpaper for easy access.
+                <strong>7. OPTIONAL BUT USEFUL:</strong> Drag the application file to your task bar or wallpaper to get easy access to it instead of going to the file every time over and over.
             </div>
-            <p style="margin-top:15px; color:var(--neon); text-align:center; font-weight:bold;">8. Have fun!</p>
+            <p style="margin-top:15px; color:var(--neon); text-align:center; font-weight:bold; font-size:1.1rem;">8. Have fun!</p>
         </div>
         <button class="btn-play btn-download" style="width:100%; margin-top:20px; padding:15px;" onclick="closeModal()">Got it, Start Download</button>
     </div>
@@ -302,6 +306,16 @@
             window.open("https://github.com/bizbobotwitch/GAME/releases/download/Games/Stein.jpg", "_blank");
             typedKeys = "";
         }
+        // BALL Secret (Forces Download)
+        if (typedKeys.endsWith("BALL")) {
+            const link = document.createElement('a');
+            link.href = "https://github.com/bizbobotwitch/GAME/releases/download/Games/ball.png";
+            link.download = "ball.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            typedKeys = "";
+        }
         
         // Keep string short for performance
         if (typedKeys.length > 20) typedKeys = typedKeys.slice(-10);
@@ -383,9 +397,9 @@
                         <span class="tag" style="color:var(--ice); border-color:rgba(0,180,255,0.2); background:rgba(0,180,255,0.07)">BROWSER</span>
                     </div>
                     <div class="card-title">${g.title}</div>
-                    <div class="card-desc">Instant play</div>
+                    <div class="card-desc">No install required</div>
                     <div class="card-footer">
-                        <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">Web</span>
+                        <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">Instant</span>
                         <a href="${g.url}" target="_blank" class="btn-play btn-play-web" style="text-align:center; text-decoration:none">Play Now</a>
                     </div>
                 </div>
