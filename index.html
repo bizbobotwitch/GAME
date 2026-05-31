@@ -275,7 +275,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // UPDATED CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyDVguqqS3Izk_p64ECsc4lig8V639VtFeA",
       authDomain: "online-game-8b909.firebaseapp.com",
@@ -290,13 +289,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Listen to "timers" node in your Realtime Database
     const timersRef = ref(db, 'timers');
     onValue(timersRef, (snapshot) => {
         const data = snapshot.val();
         window.siteTimers = [];
         if (data) {
-            // Converts Firebase object/array into an array we can map over
             Object.values(data).forEach(t => {
                 if (t.title && t.targetDate) window.siteTimers.push(t);
             });
@@ -306,11 +303,9 @@
 </script>
 
 <script>
-    // Global array that Firebase will update
     window.siteTimers = [];
     let downloadableGames = [];
     let pendingUrl = null;
-    let typedKeys = "";
 
     window.renderTimers = function() {
         const sidebarCard = document.getElementById('sidebarTimersCard');
@@ -347,7 +342,6 @@
         }).join('');
     };
 
-    // Make sure it recalculates the countdown every 1 second
     setInterval(() => {
         if (window.siteTimers.length > 0) window.renderTimers();
     }, 1000);
@@ -371,31 +365,6 @@
 
     window.triggerDownload = function(url) { pendingUrl = url; document.getElementById('downloadModal').style.display = 'flex'; };
     window.closeModal = function() { document.getElementById('downloadModal').style.display = 'none'; if(pendingUrl) window.location.href = pendingUrl; pendingUrl = null; };
-
-    // SECRET KEYBOARD LISTENER
-    document.addEventListener("keydown", (e) => {
-        typedKeys += e.key.toUpperCase();
-        
-        if (typedKeys.endsWith("FNAE")) {
-            window.open("https://aaravr10.github.io/FNAE-HTML5-1.2.3/", "_blank");
-            typedKeys = "";
-        }
-        if (typedKeys.endsWith("STEIN")) {
-            window.open("https://github.com/bizbobotwitch/GAME/releases/download/Games/Stein.jpg", "_blank");
-            typedKeys = "";
-        }
-        if (typedKeys.endsWith("BALL")) {
-            const link = document.createElement('a');
-            link.href = "https://github.com/bizbobotwitch/GAME/releases/download/Games/ball.png";
-            link.download = "ball.png";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            typedKeys = "";
-        }
-        
-        if (typedKeys.length > 20) typedKeys = typedKeys.slice(-10);
-    });
 
     function initLiveTracker() {
         const liveEl = document.getElementById('real-live-count');
