@@ -155,9 +155,11 @@
         .btn-play-web { background: linear-gradient(135deg, var(--ice), #007fd4); color: #fff; }
         .btn-play-web:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,180,255,0.35); }
 
+        /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #0a0a14; border: 1px solid var(--neon); border-radius: 20px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 0 30px rgba(0,255,136,0.2); }
 
+        /* ANNOUNCEMENT BANNER */
         #announcementBanner {
             display: none;
             position: relative;
@@ -187,6 +189,7 @@
         }
         #announcementBanner .close-btn:hover { color: white; }
 
+        /* MAINTENANCE OVERLAY */
         #maintenanceOverlay {
             position: fixed; inset: 0; z-index: 20000;
             background: var(--void);
@@ -206,22 +209,48 @@
             font-size: 1.1rem; color: var(--muted); max-width: 500px; line-height: 1.6;
         }
 
-        footer { border-top: 1px solid var(--glass-border); padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; }
+        footer { border-top: 1px solid var(--glass-border); padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
         .live-dot { height: 8px; width: 8px; background-color: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; margin-right: 8px; box-shadow: 0 0 10px var(--neon); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        @media (max-width: 960px) { .page-body { grid-template-columns: 1fr; } }
+        #downloadBubbles {
+            position: fixed; bottom: 20px; right: 20px; z-index: 9000;
+            pointer-events: none; display: flex; flex-direction: column-reverse; gap: 10px; align-items: flex-end;
+        }
+        .dl-bubble {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(4,4,10,0.92); border: 1px solid rgba(0,255,136,0.35);
+            border-radius: 14px; padding: 10px 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,136,0.15);
+            animation: bubbleUp 4.5s ease-out forwards; max-width: 260px;
+        }
+        .dl-bubble img { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; background: #000; }
+        .dl-bubble .emoji-thumb { font-size: 1.8rem; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; }
+        .dl-bubble .info { flex: 1; min-width: 0; }
+        .dl-bubble .title { font-family: 'Orbitron', monospace; font-size: 0.75rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dl-bubble .sub { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--neon); margin-top: 2px; }
+        @keyframes bubbleUp {
+            0% { opacity: 0; transform: translateY(30px) scale(0.85); }
+            12% { opacity: 1; transform: translateY(0) scale(1); }
+            75% { opacity: 1; transform: translateY(-20px); }
+            100% { opacity: 0; transform: translateY(-60px) scale(0.9); }
+        }
+
+        @media (max-width: 960px) { .page-body { grid-template-columns: 1fr; } .sidebar { position: static; } }
     </style>
 </head>
 <body>
 
 <div class="grid-bg"></div>
+<div id="downloadBubbles"></div>
 
+<!-- Global Announcement Banner -->
 <div id="announcementBanner">
     <span id="announcementText"></span>
     <button class="close-btn" onclick="dismissAnnouncement()" title="Dismiss">×</button>
 </div>
 
+<!-- Maintenance Overlay -->
 <div id="maintenanceOverlay">
     <h1 id="maintTitle">SITE OFFLINE</h1>
     <p id="maintMsg">This platform is temporarily shut down. Please check back later.</p>
@@ -288,6 +317,7 @@
 
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px; letter-spacing: 2px;">◈ UP AND COMING</h3>
+            <div id="upcomingList"></div>
             <p id="upcomingEmpty" style="font-family:'Space Mono'; font-size:0.8rem; color:var(--muted); margin-bottom:12px;">Nothing queued yet.</p>
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSe80XYsgWB4CxQ3zJVvwPr8shd9qOp-nfbKy7AWFJa6Hk3Kvg/viewform', '_blank')" 
                     class="btn-play" style="width:100%; margin-top:5px; background:transparent; border:1px solid var(--neon); color:var(--neon); cursor:pointer;">
@@ -299,14 +329,15 @@
 
 <footer>
     <div class="footer-logo" id="footerLogo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
-    <div style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted);">
-        <span class="live-dot"></span>LIVE ONLINE: <span id="real-live-count" style="color:var(--neon)">1</span>
+    <div style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted); display:flex; gap:20px; flex-wrap:wrap;">
+        <span><span class="live-dot"></span>LIVE: <span id="real-live-count" style="color:var(--neon)">1</span></span>
+        <span>DOWNLOADS: <span id="total-downloads" style="color:var(--ice)">0</span></span>
     </div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, onDisconnect, remove, get, update, query, limitToLast, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDVguqqS3Izk_p64ECsc4lig8V639VtFeA",
@@ -321,7 +352,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    window._db = db;
+    window._fb = { push, set, remove, update, get, ref };
 
+    // Timers
     const timersRef = ref(db, 'timers');
     onValue(timersRef, (snapshot) => {
         const data = snapshot.val();
@@ -334,21 +368,110 @@
         window.renderTimers();
     });
 
+    // Site Config
     const configRef = ref(db, 'siteConfig');
     onValue(configRef, (snapshot) => {
         const cfg = snapshot.val() || {};
         applySiteConfig(cfg);
     });
+
+    // Up and Coming
+    const upcomingRef = ref(db, 'upcoming');
+    onValue(upcomingRef, (snapshot) => {
+        const data = snapshot.val();
+        window.upcomingGames = [];
+        if (data) {
+            Object.values(data).forEach(item => {
+                if (item && item.title) window.upcomingGames.push(item);
+            });
+        }
+        window.renderUpcoming();
+    });
+
+    // Presence (online users)
+    const sessionId = 's_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const myPresenceRef = ref(db, 'presence/' + sessionId);
+    set(myPresenceRef, { online: true, joined: Date.now() });
+    onDisconnect(myPresenceRef).remove();
+
+    onValue(ref(db, 'presence'), (snap) => {
+        const data = snap.val() || {};
+        const count = Object.keys(data).length;
+        const el = document.getElementById('real-live-count');
+        if (el) el.textContent = Math.max(1, count);
+    });
+
+    // Live downloads (bubbles + counter)
+    let lastSeenDownloadKey = null;
+    let downloadCount = 0;
+    onValue(ref(db, 'downloadCount'), (snap) => {
+        downloadCount = snap.val() || 0;
+        const el = document.getElementById('total-downloads');
+        if (el) el.textContent = downloadCount;
+    });
+
+    onValue(query(ref(db, 'downloads'), orderByChild('ts'), limitToLast(15)), (snap) => {
+        const data = snap.val() || {};
+        const entries = Object.entries(data).sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+        if (lastSeenDownloadKey === null) {
+            // First load — don't spam bubbles for old ones
+            if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
+            return;
+        }
+        for (const [key, item] of entries) {
+            if (key === lastSeenDownloadKey) continue;
+            // Only show if newer than last seen
+            const lastTs = data[lastSeenDownloadKey] ? data[lastSeenDownloadKey].ts : 0;
+            if ((item.ts||0) > lastTs) {
+                window.spawnDownloadBubble(item);
+            }
+        }
+        if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
+    });
+
+    window.logDownload = async function(title, thumb) {
+        try {
+            await push(ref(db, 'downloads'), {
+                title: title || 'Game',
+                thumb: thumb || null,
+                ts: Date.now()
+            });
+            // increment counter
+            const countRef = ref(db, 'downloadCount');
+            const snap = await get(countRef);
+            await set(countRef, (snap.val() || 0) + 1);
+        } catch(e) { console.error(e); }
+    };
 </script>
 
 <script>
     window.siteTimers = [];
+    window.upcomingGames = [];
     let downloadableGames = [];
     let pendingUrl = null;
+
     let lastRefreshToken = null;
     let announcementDismissed = false;
 
+    window.renderUpcoming = function() {
+        const list = document.getElementById('upcomingList');
+        const empty = document.getElementById('upcomingEmpty');
+        if (!window.upcomingGames || window.upcomingGames.length === 0) {
+            list.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+        list.innerHTML = window.upcomingGames.map(g => `
+            <div style="font-family:'Space Mono'; font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; margin-bottom:10px; border:1px solid var(--glass-border);">
+                ${g.title}
+                <span style="float:right; color:var(--gold); font-size:0.65rem; border:1px solid rgba(255,215,0,0.3); padding:2px 6px; border-radius:4px;">${g.status || 'QUEUED'}</span>
+            </div>
+        `).join('');
+    };
+
     function applySiteConfig(cfg) {
+        // Site name / branding
         const siteName = cfg.siteName || "Keith Valley Games";
         const logoText = cfg.logoText || "KVG ◈";
         const line1 = cfg.heroLine1 || "Keith Valley";
@@ -363,6 +486,7 @@
         document.getElementById('heroEyebrow').textContent = eyebrow;
         document.getElementById('footerLogo').textContent = logoText + " " + year;
 
+        // Maintenance / shutdown
         const overlay = document.getElementById('maintenanceOverlay');
         if (cfg.maintenance === true) {
             overlay.classList.add('active');
@@ -372,6 +496,7 @@
             overlay.classList.remove('active');
         }
 
+        // Global Announcement
         const banner = document.getElementById('announcementBanner');
         if (cfg.announcementEnabled && cfg.announcementMsg && !announcementDismissed) {
             document.getElementById('announcementText').textContent = cfg.announcementMsg;
@@ -380,8 +505,10 @@
             banner.classList.remove('active');
         }
 
+        // Global Refresh
         if (cfg.refreshToken) {
             if (lastRefreshToken === null) {
+                // First load — just store it, don't reload
                 lastRefreshToken = cfg.refreshToken;
             } else if (cfg.refreshToken !== lastRefreshToken) {
                 lastRefreshToken = cfg.refreshToken;
@@ -451,19 +578,41 @@
         { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", thumb: "🍪", tag: "IDLE" }
     ];
 
-    window.triggerDownload = function(url) { pendingUrl = url; document.getElementById('downloadModal').style.display = 'flex'; };
-    window.closeModal = function() { document.getElementById('downloadModal').style.display = 'none'; if(pendingUrl) window.location.href = pendingUrl; pendingUrl = null; };
+    let pendingDownload = null;
 
-    function initLiveTracker() {
-        const liveEl = document.getElementById('real-live-count');
-        function pulse() {
-            fetch(`https://api.countapi.xyz/hit/kvg-live-tracker/active-sessions`)
-                .then(res => res.json())
-                .then(data => { liveEl.textContent = Math.max(1, (data.value % 5) + 1); })
-                .catch(() => liveEl.textContent = "1");
+    window.triggerDownload = function(url, title, thumb) {
+        pendingDownload = { url, title, thumb };
+        document.getElementById('downloadModal').style.display = 'flex';
+    };
+
+    window.closeModal = function() {
+        document.getElementById('downloadModal').style.display = 'none';
+        if (pendingDownload) {
+            if (window.logDownload) window.logDownload(pendingDownload.title, pendingDownload.thumb);
+            window.location.href = pendingDownload.url;
+            pendingDownload = null;
         }
-        pulse(); setInterval(pulse, 2000); 
-    }
+    };
+
+    window.spawnDownloadBubble = function(item) {
+        const container = document.getElementById('downloadBubbles');
+        if (!container) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'dl-bubble';
+        const thumbHtml = item.thumb
+            ? (item.thumb.startsWith('http')
+                ? `<img src="${item.thumb}" alt="">`
+                : `<div class="emoji-thumb">${item.thumb}</div>`)
+            : `<div class="emoji-thumb">🎮</div>`;
+        bubble.innerHTML = `
+            ${thumbHtml}
+            <div class="info">
+                <div class="title">${item.title || 'Game'}</div>
+                <div class="sub">Someone just downloaded</div>
+            </div>`;
+        container.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 4600);
+    };
 
     async function fetchGames() {
         try {
@@ -514,7 +663,7 @@
                     <div class="card-desc">Extract & play</div>
                     <div class="card-footer">
                         <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">${g.size} MB</span>
-                        <button onclick="triggerDownload('${g.url}')" class="btn-play btn-download">Download</button>
+                        <button onclick="triggerDownload('${g.url}', '${(g.title||'').replace(/'/g,"\\'")}', '${(g.thumb||'').replace(/'/g,"\\'")}')" class="btn-play btn-download">Download</button>
                     </div>
                 </div>
             </div>`).join('');
@@ -552,7 +701,6 @@
 
     window.onload = () => { 
         fetchGames(); 
-        initLiveTracker(); 
     };
 </script>
 </body>
