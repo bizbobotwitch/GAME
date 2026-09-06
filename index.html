@@ -105,21 +105,6 @@
         h1 .line1 { display: block; background: linear-gradient(135deg, #fff 30%, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         h1 .line2 { display: block; background: linear-gradient(135deg, var(--neon), var(--ice)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 25px rgba(0,255,136,0.4)); }
 
-        .update-notice {
-            display: inline-block;
-            background: rgba(255, 58, 110, 0.1);
-            border: 1px solid var(--hot);
-            color: var(--hot);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 40px;
-            box-shadow: 0 0 15px rgba(255, 58, 110, 0.2);
-        }
-
         .stats-bar {
             display: flex;
             justify-content: center;
@@ -170,20 +155,43 @@
         .btn-play-web { background: linear-gradient(135deg, var(--ice), #007fd4); color: #fff; }
         .btn-play-web:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,180,255,0.35); }
 
-        /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #0a0a14; border: 1px solid var(--neon); border-radius: 20px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 0 30px rgba(0,255,136,0.2); }
+
+        #maintenanceOverlay {
+            position: fixed; inset: 0; z-index: 20000;
+            background: var(--void);
+            display: none;
+            align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; padding: 40px;
+        }
+        #maintenanceOverlay.active { display: flex; }
+        #maintenanceOverlay h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            color: var(--hot);
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255,58,110,0.4);
+        }
+        #maintenanceOverlay p {
+            font-size: 1.1rem; color: var(--muted); max-width: 500px; line-height: 1.6;
+        }
 
         footer { border-top: 1px solid var(--glass-border); padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; }
         .live-dot { height: 8px; width: 8px; background-color: var(--neon); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; margin-right: 8px; box-shadow: 0 0 10px var(--neon); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        @media (max-width: 960px) { .page-body { grid-template-columns: 1fr; } .sidebar { position: static; } }
+        @media (max-width: 960px) { .page-body { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="grid-bg"></div>
+
+<div id="maintenanceOverlay">
+    <h1 id="maintTitle">SITE OFFLINE</h1>
+    <p id="maintMsg">This platform is temporarily shut down. Please check back later.</p>
+</div>
 
 <div class="modal-overlay" id="downloadModal">
     <div class="modal-content">
@@ -207,19 +215,15 @@
 </div>
 
 <nav class="topbar">
-    <div class="topbar-logo">KVG ◈</div>
+    <div class="topbar-logo" id="siteLogo">KVG ◈</div>
 </nav>
 
 <section class="hero">
-    <div class="hero-eyebrow">Est. by Bizbobotwitch</div>
+    <div class="hero-eyebrow" id="heroEyebrow">Est. by Bizbobotwitch</div>
     <h1>
-        <span class="line1">Keith Valley</span>
-        <span class="line2">Games</span>
+        <span class="line1" id="heroLine1">Keith Valley</span>
+        <span class="line2" id="heroLine2">Games</span>
     </h1>
-    
-    <div class="update-notice">
-        ⚠ Notice: This platform will not receive many updates until September 2026.
-    </div>
 
     <div class="stats-bar">
         <div class="stat-item"><span class="stat-num" id="stat-web-count">14</span><span class="stat-lbl">Web Games</span></div>
@@ -250,14 +254,9 @@
 
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px; letter-spacing: 2px;">◈ UP AND COMING</h3>
-            <div style="font-family:'Space Mono'; font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; margin-bottom:10px; border:1px solid var(--glass-border);">
-                Binding of Isaac <span style="float:right; color:var(--gold); font-size:0.65rem; border:1px solid rgba(255,215,0,0.3); padding:2px 6px; border-radius:4px;">QUEUED</span>
-            </div>
-            <div style="font-family:'Space Mono'; font-size:0.8rem; color:white; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid var(--glass-border);">
-                Crossy Road <span style="float:right; color:var(--gold); font-size:0.65rem; border:1px solid rgba(255,215,0,0.3); padding:2px 6px; border-radius:4px;">QUEUED</span>
-            </div>
+            <p id="upcomingEmpty" style="font-family:'Space Mono'; font-size:0.8rem; color:var(--muted); margin-bottom:12px;">Nothing queued yet.</p>
             <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSe80XYsgWB4CxQ3zJVvwPr8shd9qOp-nfbKy7AWFJa6Hk3Kvg/viewform', '_blank')" 
-                    class="btn-play" style="width:100%; margin-top:15px; background:transparent; border:1px solid var(--neon); color:var(--neon); cursor:pointer;">
+                    class="btn-play" style="width:100%; margin-top:5px; background:transparent; border:1px solid var(--neon); color:var(--neon); cursor:pointer;">
                 Suggest a Game
             </button>
         </div>
@@ -265,7 +264,7 @@
 </div>
 
 <footer>
-    <div class="footer-logo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
+    <div class="footer-logo" id="footerLogo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
     <div style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted);">
         <span class="live-dot"></span>LIVE ONLINE: <span id="real-live-count" style="color:var(--neon)">1</span>
     </div>
@@ -300,12 +299,43 @@
         }
         window.renderTimers();
     });
+
+    const configRef = ref(db, 'siteConfig');
+    onValue(configRef, (snapshot) => {
+        const cfg = snapshot.val() || {};
+        applySiteConfig(cfg);
+    });
 </script>
 
 <script>
     window.siteTimers = [];
     let downloadableGames = [];
     let pendingUrl = null;
+
+    function applySiteConfig(cfg) {
+        const siteName = cfg.siteName || "Keith Valley Games";
+        const logoText = cfg.logoText || "KVG ◈";
+        const line1 = cfg.heroLine1 || "Keith Valley";
+        const line2 = cfg.heroLine2 || "Games";
+        const eyebrow = cfg.heroEyebrow || "Est. by Bizbobotwitch";
+        const year = cfg.footerYear || "2025";
+
+        document.title = siteName;
+        document.getElementById('siteLogo').textContent = logoText;
+        document.getElementById('heroLine1').textContent = line1;
+        document.getElementById('heroLine2').textContent = line2;
+        document.getElementById('heroEyebrow').textContent = eyebrow;
+        document.getElementById('footerLogo').textContent = logoText + " " + year;
+
+        const overlay = document.getElementById('maintenanceOverlay');
+        if (cfg.maintenance === true) {
+            overlay.classList.add('active');
+            document.getElementById('maintTitle').textContent = cfg.maintenanceTitle || "SITE OFFLINE";
+            document.getElementById('maintMsg').textContent = cfg.maintenanceMsg || "This platform is temporarily shut down. Please check back later.";
+        } else {
+            overlay.classList.remove('active');
+        }
+    }
 
     window.renderTimers = function() {
         const sidebarCard = document.getElementById('sidebarTimersCard');
