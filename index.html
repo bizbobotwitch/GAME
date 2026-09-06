@@ -158,6 +158,35 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #0a0a14; border: 1px solid var(--neon); border-radius: 20px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 0 30px rgba(0,255,136,0.2); }
 
+        #announcementBanner {
+            display: none;
+            position: relative;
+            z-index: 150;
+            background: linear-gradient(90deg, rgba(0,180,255,0.15), rgba(0,255,136,0.1));
+            border-bottom: 1px solid rgba(0,180,255,0.35);
+            padding: 12px 50px 12px 20px;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--ice);
+            letter-spacing: 0.5px;
+        }
+        #announcementBanner.active { display: block; }
+        #announcementBanner .close-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+        }
+        #announcementBanner .close-btn:hover { color: white; }
+
         #maintenanceOverlay {
             position: fixed; inset: 0; z-index: 20000;
             background: var(--void);
@@ -187,6 +216,11 @@
 <body>
 
 <div class="grid-bg"></div>
+
+<div id="announcementBanner">
+    <span id="announcementText"></span>
+    <button class="close-btn" onclick="dismissAnnouncement()" title="Dismiss">×</button>
+</div>
 
 <div id="maintenanceOverlay">
     <h1 id="maintTitle">SITE OFFLINE</h1>
@@ -311,6 +345,8 @@
     window.siteTimers = [];
     let downloadableGames = [];
     let pendingUrl = null;
+    let lastRefreshToken = null;
+    let announcementDismissed = false;
 
     function applySiteConfig(cfg) {
         const siteName = cfg.siteName || "Keith Valley Games";
@@ -335,7 +371,29 @@
         } else {
             overlay.classList.remove('active');
         }
+
+        const banner = document.getElementById('announcementBanner');
+        if (cfg.announcementEnabled && cfg.announcementMsg && !announcementDismissed) {
+            document.getElementById('announcementText').textContent = cfg.announcementMsg;
+            banner.classList.add('active');
+        } else {
+            banner.classList.remove('active');
+        }
+
+        if (cfg.refreshToken) {
+            if (lastRefreshToken === null) {
+                lastRefreshToken = cfg.refreshToken;
+            } else if (cfg.refreshToken !== lastRefreshToken) {
+                lastRefreshToken = cfg.refreshToken;
+                location.reload();
+            }
+        }
     }
+
+    window.dismissAnnouncement = function() {
+        announcementDismissed = true;
+        document.getElementById('announcementBanner').classList.remove('active');
+    };
 
     window.renderTimers = function() {
         const sidebarCard = document.getElementById('sidebarTimersCard');
