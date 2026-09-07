@@ -315,7 +315,7 @@
             <div id="sidebarTimersList" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
 
-        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
+        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px; letter-spacing: 2px;">◈ UP AND COMING</h3>
             <div id="upcomingList"></div>
             <p id="upcomingEmpty" style="font-family:'Space Mono'; font-size:0.8rem; color:var(--muted); margin-bottom:12px;">Nothing queued yet.</p>
@@ -324,11 +324,18 @@
                 Suggest a Game
             </button>
         </div>
+        <div id="changelogBox" style="display:none; background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:12px; letter-spacing: 2px;">◈ WHAT'S NEW</h3>
+            <pre id="changelogText" style="font-family:'Space Mono'; font-size:0.75rem; color:var(--text); white-space:pre-wrap; line-height:1.5; margin:0;"></pre>
+        </div>
     </aside>
 </div>
 
 <footer>
-    <div class="footer-logo" id="footerLogo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
+    <div>
+        <div class="footer-logo" id="footerLogo" style="font-family:'Orbitron'; letter-spacing:2px; color:var(--muted); font-size:0.8rem;">KVG ◈ 2025</div>
+        <div id="footerTip" style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted); margin-top:6px; max-width:320px;"></div>
+    </div>
     <div style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted); display:flex; gap:20px; flex-wrap:wrap;">
         <span><span class="live-dot"></span>LIVE: <span id="real-live-count" style="color:var(--neon)">1</span></span>
         <span>DOWNLOADS: <span id="total-downloads" style="color:var(--ice)">0</span></span>
@@ -431,17 +438,29 @@
 
     window.logDownload = async function(title, thumb) {
         try {
-            await push(ref(db, 'downloads'), {
-                title: title || 'Game',
-                thumb: thumb || null,
-                ts: Date.now()
-            });
-            // increment counter
+            const t = title || 'Game';
+            await push(ref(db, 'downloads'), { title: t, thumb: thumb || null, ts: Date.now() });
             const countRef = ref(db, 'downloadCount');
             const snap = await get(countRef);
-            await set(countRef, (snap.val() || 0) + 1);
+            const newTotal = (snap.val() || 0) + 1;
+            await set(countRef, newTotal);
+            // per-game count
+            const safe = t.replace(/[.#$\/\[\]]/g, '_');
+            const gRef = ref(db, 'gameDownloads/' + safe);
+            const gSnap = await get(gRef);
+            await set(gRef, (gSnap.val() || 0) + 1);
+            // milestones
+            if ([100,250,500,1000,2500,5000].includes(newTotal) && typeof fireConfetti === 'function') fireConfetti();
+            // activity log
+            await push(ref(db, 'activityLog'), { type: 'download', title: t, ts: Date.now() });
         } catch(e) { console.error(e); }
     };
+
+    // live per-game counts
+    onValue(ref(db, 'gameDownloads'), (snap) => {
+        window.gameDownloadCounts = snap.val() || {};
+        if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+    });
 </script>
 
 <script>
@@ -470,8 +489,12 @@
         `).join('');
     };
 
+    window._siteCfg = {};
+    window.gameDownloadCounts = {};
+    window.bubbleSoundEnabled = true;
+
     function applySiteConfig(cfg) {
-        // Site name / branding
+        window._siteCfg = cfg || {};
         const siteName = cfg.siteName || "Keith Valley Games";
         const logoText = cfg.logoText || "KVG ◈";
         const line1 = cfg.heroLine1 || "Keith Valley";
@@ -486,7 +509,18 @@
         document.getElementById('heroEyebrow').textContent = eyebrow;
         document.getElementById('footerLogo').textContent = logoText + " " + year;
 
-        // Maintenance / shutdown
+        // Accent colors
+        if (cfg.accentNeon) document.documentElement.style.setProperty('--neon', cfg.accentNeon);
+        if (cfg.accentIce) document.documentElement.style.setProperty('--ice', cfg.accentIce);
+
+        // Footer tip
+        const tipEl = document.getElementById('footerTip');
+        if (tipEl) tipEl.textContent = cfg.footerTip || '';
+
+        // Bubble sound toggle
+        window.bubbleSoundEnabled = cfg.bubbleSound !== false;
+
+        // Maintenance
         const overlay = document.getElementById('maintenanceOverlay');
         if (cfg.maintenance === true) {
             overlay.classList.add('active');
@@ -496,25 +530,109 @@
             overlay.classList.remove('active');
         }
 
-        // Global Announcement
+        // Announcement + auto-hide
         const banner = document.getElementById('announcementBanner');
         if (cfg.announcementEnabled && cfg.announcementMsg && !announcementDismissed) {
-            document.getElementById('announcementText').textContent = cfg.announcementMsg;
-            banner.classList.add('active');
+            let show = true;
+            if (cfg.announcementHideAfterHours && cfg.announcementSetAt) {
+                const hours = parseFloat(cfg.announcementHideAfterHours) || 0;
+                if (hours > 0 && (Date.now() - cfg.announcementSetAt) > hours * 3600000) show = false;
+            }
+            if (show) {
+                document.getElementById('announcementText').textContent = cfg.announcementMsg;
+                banner.classList.add('active');
+            } else banner.classList.remove('active');
         } else {
             banner.classList.remove('active');
+        }
+
+        // Broadcast modal
+        if (cfg.broadcastMsg && cfg.broadcastToken) {
+            const last = sessionStorage.getItem('kvg_broadcast') || '';
+            if (String(cfg.broadcastToken) !== last) {
+                sessionStorage.setItem('kvg_broadcast', String(cfg.broadcastToken));
+                showBroadcast(cfg.broadcastMsg);
+            }
+        }
+
+        // Featured game re-render
+        if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+
+        // Changelog
+        const cl = document.getElementById('changelogBox');
+        if (cl) {
+            if (cfg.changelog) {
+                cl.style.display = 'block';
+                document.getElementById('changelogText').textContent = cfg.changelog;
+            } else cl.style.display = 'none';
         }
 
         // Global Refresh
         if (cfg.refreshToken) {
             if (lastRefreshToken === null) {
-                // First load — just store it, don't reload
                 lastRefreshToken = cfg.refreshToken;
             } else if (cfg.refreshToken !== lastRefreshToken) {
                 lastRefreshToken = cfg.refreshToken;
                 location.reload();
             }
         }
+    }
+
+    function showBroadcast(msg) {
+        let m = document.getElementById('broadcastModal');
+        if (!m) {
+            m = document.createElement('div');
+            m.id = 'broadcastModal';
+            m.style.cssText = 'position:fixed;inset:0;z-index:25000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;';
+            m.innerHTML = `<div style="background:#0a0a14;border:1px solid var(--neon);border-radius:16px;padding:28px;max-width:420px;width:100%;text-align:center;">
+                <div style="font-family:Orbitron,monospace;color:var(--neon);margin-bottom:12px;letter-spacing:1px;">MESSAGE</div>
+                <p id="broadcastBody" style="color:white;line-height:1.5;margin-bottom:18px;"></p>
+                <button onclick="document.getElementById('broadcastModal').remove()" class="btn-play btn-download" style="width:100%;padding:12px;">Got it</button>
+            </div>`;
+            document.body.appendChild(m);
+        }
+        document.getElementById('broadcastBody').textContent = msg;
+    }
+
+    // Konami code
+    (function(){
+        const seq = [38,38,40,40,37,39,37,39,66,65];
+        let pos = 0;
+        window.addEventListener('keydown', e => {
+            if (e.keyCode === seq[pos]) { pos++; if (pos === seq.length) { pos=0; fireConfetti(); alert('◈ KVG SECRET UNLOCKED'); } }
+            else pos = 0;
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                const s = document.getElementById('searchInput');
+                if (s) s.focus();
+            }
+        });
+    })();
+
+    function fireConfetti() {
+        for (let i=0;i<40;i++){
+            const el = document.createElement('div');
+            el.style.cssText = `position:fixed;top:-10px;left:${Math.random()*100}%;width:8px;height:8px;background:${['#00ff88','#00b4ff','#ffd700','#ff3a6e'][i%4]};border-radius:50%;z-index:30000;pointer-events:none;animation:confettiFall ${2+Math.random()*2}s linear forwards;`;
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(), 4000);
+        }
+    }
+    if (!document.getElementById('confettiStyle')) {
+        const st = document.createElement('style');
+        st.id = 'confettiStyle';
+        st.textContent = `@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}`;
+        document.head.appendChild(st);
+    }
+
+    function playBubbleSound() {
+        if (!window.bubbleSoundEnabled) return;
+        try {
+            const ctx = new (window.AudioContext||window.webkitAudioContext)();
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = 880; g.gain.value = 0.04;
+            o.start(); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.2); o.stop(ctx.currentTime+0.2);
+        } catch(e){}
     }
 
     window.dismissAnnouncement = function() {
@@ -597,6 +715,7 @@
     window.spawnDownloadBubble = function(item) {
         const container = document.getElementById('downloadBubbles');
         if (!container) return;
+        if (typeof playBubbleSound === 'function') playBubbleSound();
         const bubble = document.createElement('div');
         bubble.className = 'dl-bubble';
         const thumbHtml = item.thumb
@@ -650,23 +769,45 @@
 
     window.renderDownloadableGames = function(filtered = null) {
         const list = document.getElementById('download-list');
-        const games = filtered || downloadableGames;
-        list.innerHTML = games.map(g => `
-            <div class="card-item">
+        let games = filtered || downloadableGames.slice();
+        const featuredName = (window._siteCfg && window._siteCfg.featuredGame) || '';
+        // sort featured first
+        if (featuredName && !filtered) {
+            games = games.slice().sort((a,b) => {
+                const af = a.title.toLowerCase() === featuredName.toLowerCase() ? 0 : 1;
+                const bf = b.title.toLowerCase() === featuredName.toLowerCase() ? 0 : 1;
+                return af - bf;
+            });
+        }
+        const newDays = parseFloat((window._siteCfg && window._siteCfg.newBadgeDays) || 7);
+        list.innerHTML = games.map(g => {
+            const safe = (g.title||'').replace(/[.#$\/\[\]]/g, '_');
+            const dls = (window.gameDownloadCounts && window.gameDownloadCounts[safe]) || 0;
+            const isFeatured = featuredName && g.title.toLowerCase() === featuredName.toLowerCase();
+            // crude "new" if we ever store addedAt; for now skip unless title matches recent pattern - use cfg list
+            const newList = ((window._siteCfg && window._siteCfg.newGames) || '').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+            const isNew = newList.includes((g.title||'').toLowerCase());
+            const tags = [
+                '<span class="tag">PC</span>',
+                '<span class="tag" style="color:var(--neon); border-color:rgba(0,255,136,0.2); background:rgba(0,255,136,0.07)">FREE</span>'
+            ];
+            if (isFeatured) tags.push('<span class="tag" style="color:var(--gold); border-color:rgba(255,215,0,0.35); background:rgba(255,215,0,0.1)">FEATURED</span>');
+            if (isNew) tags.push('<span class="tag" style="color:var(--hot); border-color:rgba(255,58,110,0.35); background:rgba(255,58,110,0.1)">NEW</span>');
+            const esc = (s) => String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return `
+            <div class="card-item" style="${isFeatured ? 'border-color:rgba(255,215,0,0.45); box-shadow:0 0 20px rgba(255,215,0,0.12);' : ''}">
                 <div class="thumb-box">${g.thumb ? `<img src="${g.thumb}" class="thumb-img">` : `<span style="font-size:2rem; position:relative; z-index:2;">🎮</span>`}</div>
                 <div class="card-body">
-                    <div class="card-tags">
-                        <span class="tag">PC</span>
-                        <span class="tag" style="color:var(--neon); border-color:rgba(0,255,136,0.2); background:rgba(0,255,136,0.07)">FREE</span>
-                    </div>
+                    <div class="card-tags">${tags.join('')}</div>
                     <div class="card-title">${g.title}</div>
-                    <div class="card-desc">Extract & play</div>
+                    <div class="card-desc">Extract & play · ${dls} download${dls===1?'':'s'}</div>
                     <div class="card-footer">
                         <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">${g.size} MB</span>
-                        <button onclick="triggerDownload('${g.url}', '${(g.title||'').replace(/'/g,"\\'")}', '${(g.thumb||'').replace(/'/g,"\\'")}')" class="btn-play btn-download">Download</button>
+                        <button onclick="triggerDownload('${esc(g.url)}', '${esc(g.title)}', '${esc(g.thumb)}')" class="btn-play btn-download">Download</button>
                     </div>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
     };
 
     window.renderWebGames = function() {
