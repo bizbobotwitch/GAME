@@ -390,6 +390,12 @@
         <div class="stat-item"><span class="stat-num" id="stat-web-count">14</span><span class="stat-lbl">Web Games</span></div>
         <div class="stat-item"><span class="stat-num" id="stat-games">0</span><span class="stat-lbl">Total Games</span></div>
     </div>
+
+    <div id="launchCountdown" style="display:none; max-width:560px; margin:28px auto 0; padding:20px 24px; background:linear-gradient(135deg,rgba(0,255,136,0.1),rgba(0,180,255,0.08)); border:1px solid rgba(0,255,136,0.35); border-radius:16px;">
+        <div style="font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--neon); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">◈ Launching Soon</div>
+        <div id="launchGameName" style="font-family:'Orbitron',monospace; font-size:1.2rem; color:white; margin-bottom:12px;">—</div>
+        <div id="launchTimer" style="font-family:'Orbitron',monospace; font-size:clamp(1.4rem,4vw,2rem); color:var(--gold); letter-spacing:2px;">--:--:--:--</div>
+    </div>
 </section>
 
 <div id="gameOfDay">
@@ -432,6 +438,11 @@
         </div>
 
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--hot); margin-bottom:15px; letter-spacing: 2px;">◈ HOT RIGHT NOW</h3>
+            <div id="hotList" style="font-family:'Space Mono'; font-size:0.78rem; color:var(--muted);">Loading…</div>
+        </div>
+
+        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--muted); margin-bottom:15px; letter-spacing: 2px;">◈ UP AND COMING</h3>
             <div id="upcomingList"></div>
             <p id="upcomingEmpty" style="font-family:'Space Mono'; font-size:0.8rem; color:var(--muted); margin-bottom:12px;">Nothing queued yet.</p>
@@ -440,11 +451,29 @@
                 Suggest a Game
             </button>
         </div>
+
+        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:15px; letter-spacing: 2px;">◈ GUESTBOOK</h3>
+            <div id="guestbookList" style="max-height:180px; overflow-y:auto; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;"></div>
+            <input type="text" id="gbName" placeholder="Name" maxlength="20" style="width:100%; margin-bottom:8px; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(--glass-border); border-radius:8px; color:white; font-family:Syne,sans-serif;">
+            <input type="text" id="gbMsg" placeholder="Short message…" maxlength="120" style="width:100%; margin-bottom:8px; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(--glass-border); border-radius:8px; color:white; font-family:Syne,sans-serif;">
+            <button type="button" class="btn-play" style="width:100%; background:transparent; border:1px solid var(--ice); color:var(--ice); cursor:pointer;" onclick="submitGuestbook()">Post</button>
+            <p id="gbStatus" style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted); margin-top:8px;"></p>
+        </div>
+
         <div id="changelogBox" style="display:none; background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:12px; letter-spacing: 2px;">◈ WHAT'S NEW</h3>
             <pre id="changelogText" style="font-family:'Space Mono'; font-size:0.75rem; color:var(--text); white-space:pre-wrap; line-height:1.5; margin:0;"></pre>
         </div>
     </aside>
+
+    <!-- Konami secret page -->
+    <div id="secretPage" style="display:none; position:fixed; inset:0; z-index:40000; background:rgba(4,4,10,0.96); align-items:center; justify-content:center; flex-direction:column; padding:30px; text-align:center;">
+        <div style="font-family:'Orbitron',monospace; font-size:clamp(1.5rem,5vw,2.5rem); color:var(--neon); margin-bottom:12px; text-shadow:0 0 30px rgba(0,255,136,0.4);">◈ KVG VAULT</div>
+        <p style="color:var(--muted); max-width:420px; line-height:1.6; margin-bottom:20px;">You found the secret page. Stay weird. Stay downloading.</p>
+        <div style="font-size:3rem; margin-bottom:20px;">👾🎮✨</div>
+        <button type="button" class="btn-play btn-download" style="padding:12px 28px;" onclick="document.getElementById('secretPage').style.display='none'">Close Vault</button>
+    </div>
 </div>
 
 <footer>
@@ -533,23 +562,63 @@
         if (el) el.textContent = downloadCount;
     });
 
-    onValue(query(ref(db, 'downloads'), orderByChild('ts'), limitToLast(15)), (snap) => {
+    onValue(query(ref(db, 'downloads'), orderByChild('ts'), limitToLast(80)), (snap) => {
         const data = snap.val() || {};
         const entries = Object.entries(data).sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+        // Hot right now — last hour top 3
+        const hourAgo = Date.now() - 3600000;
+        const counts = {};
+        Object.values(data).forEach(item => {
+            if ((item.ts || 0) >= hourAgo) {
+                const t = item.title || 'Game';
+                counts[t] = (counts[t] || 0) + 1;
+            }
+        });
+        const hot = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 3);
+        const hotEl = document.getElementById('hotList');
+        if (hotEl) {
+            if (!hot.length) hotEl.innerHTML = '<span style="color:var(--muted)">No downloads in the last hour.</span>';
+            else hotEl.innerHTML = hot.map(([title, n], i) =>
+                `<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--glass-border);">
+                    <span style="color:white;">${i+1}. ${title}</span>
+                    <span style="color:var(--hot);">${n}</span>
+                </div>`
+            ).join('');
+        }
+
         if (lastSeenDownloadKey === null) {
-            // First load — don't spam bubbles for old ones
             if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
             return;
         }
         for (const [key, item] of entries) {
             if (key === lastSeenDownloadKey) continue;
-            // Only show if newer than last seen
             const lastTs = data[lastSeenDownloadKey] ? data[lastSeenDownloadKey].ts : 0;
             if ((item.ts||0) > lastTs) {
                 window.spawnDownloadBubble(item);
             }
         }
         if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
+    });
+
+    // Approved guestbook messages
+    onValue(ref(db, 'guestbook'), (snap) => {
+        const data = snap.val() || {};
+        const approved = Object.values(data)
+            .filter(e => e && e.approved && e.msg)
+            .sort((a,b) => (b.ts||0) - (a.ts||0))
+            .slice(0, 20);
+        const el = document.getElementById('guestbookList');
+        if (!el) return;
+        if (!approved.length) {
+            el.innerHTML = '<span style="color:var(--muted);font-size:0.75rem;">No messages yet. Be the first!</span>';
+            return;
+        }
+        el.innerHTML = approved.map(e =>
+            `<div style="padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:8px;border:1px solid var(--glass-border);">
+                <div style="color:var(--ice);font-size:0.72rem;margin-bottom:3px;">${(e.name||'Anon').replace(/</g,'&lt;')}</div>
+                <div style="color:var(--text);font-size:0.8rem;line-height:1.35;">${(e.msg||'').replace(/</g,'&lt;')}</div>
+            </div>`
+        ).join('');
     });
 
     window.logDownload = async function(title, thumb) {
@@ -688,6 +757,7 @@
         // Featured / new / hidden re-render
         if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
         if (typeof renderWebGames === 'function') renderWebGames();
+        if (typeof updateLaunchCountdown === 'function') updateLaunchCountdown();
 
         // Changelog
         const cl = document.getElementById('changelogBox');
@@ -740,20 +810,92 @@
         };
     }
 
-    // Konami code
+    // Konami code → secret page
     (function(){
         const seq = [38,38,40,40,37,39,37,39,66,65];
         let pos = 0;
         window.addEventListener('keydown', e => {
-            if (e.keyCode === seq[pos]) { pos++; if (pos === seq.length) { pos=0; fireConfetti(); alert('◈ KVG SECRET UNLOCKED'); } }
-            else pos = 0;
-            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+            if (e.keyCode === seq[pos]) {
+                pos++;
+                if (pos === seq.length) {
+                    pos = 0;
+                    fireConfetti();
+                    const sp = document.getElementById('secretPage');
+                    if (sp) sp.style.display = 'flex';
+                }
+            } else pos = 0;
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                 e.preventDefault();
                 const s = document.getElementById('searchInput');
                 if (s) s.focus();
             }
         });
     })();
+
+    // Launch countdown
+    let launchInterval = null;
+    window.updateLaunchCountdown = function() {
+        const cfg = window._siteCfg || {};
+        const box = document.getElementById('launchCountdown');
+        if (!box) return;
+        if (!cfg.launchGame || !cfg.launchAt) {
+            box.style.display = 'none';
+            if (launchInterval) { clearInterval(launchInterval); launchInterval = null; }
+            return;
+        }
+        const target = new Date(cfg.launchAt).getTime();
+        if (isNaN(target)) { box.style.display = 'none'; return; }
+        document.getElementById('launchGameName').textContent = cfg.launchGame;
+        const tick = () => {
+            const diff = target - Date.now();
+            if (diff <= 0) {
+                document.getElementById('launchTimer').textContent = 'LIVE NOW';
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('launchTimer').textContent =
+                `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        };
+        box.style.display = 'block';
+        tick();
+        if (launchInterval) clearInterval(launchInterval);
+        launchInterval = setInterval(tick, 1000);
+    };
+
+    window.submitGuestbook = async function() {
+        const name = (document.getElementById('gbName').value || '').trim().slice(0, 20);
+        const msg = (document.getElementById('gbMsg').value || '').trim().slice(0, 120);
+        const st = document.getElementById('gbStatus');
+        if (!name || !msg) { st.textContent = 'Name and message required'; st.style.color = 'var(--hot)'; return; }
+        try {
+            const db = window._db;
+            if (!db) throw new Error('Not connected');
+            await window._fb.push(window._fb.ref(db, 'guestbook'), {
+                name, msg, ts: Date.now(), approved: false
+            });
+            document.getElementById('gbMsg').value = '';
+            st.textContent = 'Submitted — waiting for admin approval';
+            st.style.color = 'var(--neon)';
+        } catch (e) {
+            st.textContent = 'Error: ' + e.message;
+            st.style.color = 'var(--hot)';
+        }
+    };
+
+    window.reportBroken = async function(title) {
+        try {
+            const db = window._db;
+            await window._fb.push(window._fb.ref(db, 'activityLog'), {
+                type: 'report', title: 'Broken: ' + (title || 'Unknown'), ts: Date.now()
+            });
+            alert('Thanks — reported to admin.');
+        } catch (e) {
+            alert('Could not send report');
+        }
+    };
 
     function fireConfetti() {
         for (let i=0;i<40;i++){
@@ -1085,9 +1227,12 @@
                     <div class="card-tags">${tags.join('')}</div>
                     <div class="card-title">${g.title} <button class="fav-btn ${isFav?'on':''}" onclick="event.stopPropagation(); toggleFavorite('${esc(g.title)}')" title="Favorite">${isFav?'♥':'♡'}</button></div>
                     <div class="card-desc">Extract & play · ${dls} download${dls===1?'':'s'}</div>
-                    <div class="card-footer">
+                    <div class="card-footer" style="flex-wrap:wrap; gap:8px;">
                         <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">${g.size} MB</span>
-                        <button onclick="triggerDownload('${esc(g.url)}', '${esc(g.title)}', '${esc(g.thumb)}')" class="btn-play btn-download">Download</button>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button type="button" onclick="reportBroken('${esc(g.title)}')" style="background:none;border:none;color:var(--muted);font-size:0.65rem;cursor:pointer;font-family:'Space Mono',monospace;" title="Report broken">Report</button>
+                            <button onclick="triggerDownload('${esc(g.url)}', '${esc(g.title)}', '${esc(g.thumb)}')" class="btn-play btn-download">Download</button>
+                        </div>
                     </div>
                 </div>
             </div>`;
