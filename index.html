@@ -352,7 +352,8 @@
 </div>
 
 <div class="action-bar">
-    <button type="button" onclick="playRandomGame()">Random Game</button>
+    <button type="button" onclick="playRandomDownloadable()">Random Download</button>
+    <button type="button" onclick="playRandomWeb()">Random Web Game</button>
     <button type="button" id="favFilterBtn" onclick="toggleFavFilter()">♥ Favorites</button>
 </div>
 
@@ -573,6 +574,10 @@
         // Footer tip
         const tipEl = document.getElementById('footerTip');
         if (tipEl) tipEl.textContent = cfg.footerTip || '';
+
+        // Stats bar visibility
+        const statsBar = document.querySelector('.stats-bar');
+        if (statsBar) statsBar.style.display = (cfg.showStats === false) ? 'none' : 'flex';
 
         // Bubble sound toggle
         window.bubbleSoundEnabled = cfg.bubbleSound !== false;
@@ -876,14 +881,24 @@
         filterGames();
     };
 
+    window.playRandomDownloadable = function() {
+        const list = downloadableGames.filter(g => {
+            const hidden = ((window._siteCfg && window._siteCfg.hiddenGames) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+            return !hidden.includes((g.title || '').toLowerCase());
+        });
+        if (!list.length) return alert('No downloadable games loaded yet');
+        const g = list[Math.floor(Math.random() * list.length)];
+        triggerDownload(g.url, g.title, g.thumb);
+    };
+    window.playRandomWeb = function() {
+        if (!webGames.length) return;
+        const g = webGames[Math.floor(Math.random() * webGames.length)];
+        window.open(g.url, '_blank');
+    };
+    // keep old name working
     window.playRandomGame = function() {
-        const all = [];
-        downloadableGames.forEach(g => all.push({ type: 'dl', g }));
-        webGames.forEach(g => all.push({ type: 'web', g }));
-        if (!all.length) return;
-        const pick = all[Math.floor(Math.random() * all.length)];
-        if (pick.type === 'web') window.open(pick.g.url, '_blank');
-        else triggerDownload(pick.g.url, pick.g.title, pick.g.thumb);
+        if (Math.random() < 0.5) playRandomDownloadable();
+        else playRandomWeb();
     };
 
     window.addEventListener('scroll', () => {
@@ -893,23 +908,27 @@
 
     window.renderDownloadableGames = function(filtered = null) {
         const list = document.getElementById('download-list');
+        const hidden = ((window._siteCfg && window._siteCfg.hiddenGames) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
         let games = filtered || downloadableGames.slice();
+        games = games.filter(g => !hidden.includes((g.title || '').toLowerCase()));
         const favs = getFavorites();
         if (window._showFavsOnly) {
             games = games.filter(g => favs.includes(g.title));
         }
-        const featuredName = (window._siteCfg && window._siteCfg.featuredGame) || '';
-        if (featuredName && !filtered && !window._showFavsOnly) {
+        // support multiple featured: comma-separated
+        const featuredRaw = (window._siteCfg && window._siteCfg.featuredGame) || '';
+        const featuredSet = new Set(featuredRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+        if (featuredSet.size && !filtered && !window._showFavsOnly) {
             games = games.slice().sort((a,b) => {
-                const af = a.title.toLowerCase() === featuredName.toLowerCase() ? 0 : 1;
-                const bf = b.title.toLowerCase() === featuredName.toLowerCase() ? 0 : 1;
+                const af = featuredSet.has(a.title.toLowerCase()) ? 0 : 1;
+                const bf = featuredSet.has(b.title.toLowerCase()) ? 0 : 1;
                 return af - bf;
             });
         }
         list.innerHTML = games.map(g => {
             const safe = (g.title||'').replace(/[.#$\/\[\]]/g, '_');
             const dls = (window.gameDownloadCounts && window.gameDownloadCounts[safe]) || 0;
-            const isFeatured = featuredName && g.title.toLowerCase() === featuredName.toLowerCase();
+            const isFeatured = featuredSet.has((g.title || '').toLowerCase());
             const newList = ((window._siteCfg && window._siteCfg.newGames) || '').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
             const isNew = newList.includes((g.title||'').toLowerCase());
             const isFav = favs.includes(g.title);
