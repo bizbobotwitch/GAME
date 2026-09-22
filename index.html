@@ -824,6 +824,16 @@
                 if (typeof fireConfetti === 'function') fireConfetti();
             }
         }
+
+        // Remote Gabe Mode from admin (10 seconds)
+        if (cfg.gabeToken) {
+            if (window._lastGabeToken === undefined) {
+                window._lastGabeToken = cfg.gabeToken;
+            } else if (cfg.gabeToken !== window._lastGabeToken) {
+                window._lastGabeToken = cfg.gabeToken;
+                if (typeof activateGabeMode === 'function') activateGabeMode();
+            }
+        }
     }
 
     function showBroadcast(msg, token) {
@@ -1197,6 +1207,27 @@
     window.playRandomGame = function() {
         if (Math.random() < 0.5) playRandomDownloadable();
         else playRandomWeb();
+    };
+
+    window._gabeMode = false;
+    window._gabeTimer = null;
+    const GABE_URL = "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
+
+    window.activateGabeMode = function() {
+        if (window._gabeMode) return;
+        window._gabeMode = true;
+        document.querySelectorAll('.thumb-box').forEach(box => {
+            box.innerHTML = `<img src="${GABE_URL}" class="thumb-img" alt="gabe">`;
+        });
+        const god = document.getElementById('gameOfDayThumb');
+        if (god) god.innerHTML = `<img src="${GABE_URL}" alt="gabe">`;
+        if (window._gabeTimer) clearTimeout(window._gabeTimer);
+        window._gabeTimer = setTimeout(() => {
+            window._gabeMode = false;
+            if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+            if (typeof renderWebGames === 'function') renderWebGames();
+            if (typeof renderGameOfDay === 'function') renderGameOfDay();
+        }, 10000);
     };
 
     window.addEventListener('scroll', () => {
