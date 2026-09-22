@@ -453,12 +453,9 @@
         </div>
 
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
-            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:15px; letter-spacing: 2px;">◈ GUESTBOOK</h3>
-            <div id="guestbookList" style="max-height:180px; overflow-y:auto; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;"></div>
-            <input type="text" id="gbName" placeholder="Name" maxlength="20" style="width:100%; margin-bottom:8px; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(--glass-border); border-radius:8px; color:white; font-family:Syne,sans-serif;">
-            <input type="text" id="gbMsg" placeholder="Short message…" maxlength="120" style="width:100%; margin-bottom:8px; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(--glass-border); border-radius:8px; color:white; font-family:Syne,sans-serif;">
-            <button type="button" class="btn-play" style="width:100%; background:transparent; border:1px solid var(--ice); color:var(--ice); cursor:pointer;" onclick="submitGuestbook()">Post</button>
-            <p id="gbStatus" style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted); margin-top:8px;"></p>
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:12px; letter-spacing: 2px;">◈ CHAT</h3>
+            <p style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted); margin-bottom:12px;">Hang out with other visitors in the live room.</p>
+            <button type="button" class="btn-play" style="width:100%; background:linear-gradient(135deg,var(--ice),#007fd4); color:#fff; border:none; cursor:pointer; padding:12px;" onclick="openChatRoom()">Open Chatroom</button>
         </div>
 
         <div id="changelogBox" style="display:none; background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px;">
@@ -467,13 +464,36 @@
         </div>
     </aside>
 
-    <!-- Konami secret page -->
-    <div id="secretPage" style="display:none; position:fixed; inset:0; z-index:40000; background:rgba(4,4,10,0.96); align-items:center; justify-content:center; flex-direction:column; padding:30px; text-align:center;">
-        <div style="font-family:'Orbitron',monospace; font-size:clamp(1.5rem,5vw,2.5rem); color:var(--neon); margin-bottom:12px; text-shadow:0 0 30px rgba(0,255,136,0.4);">◈ KVG VAULT</div>
-        <p style="color:var(--muted); max-width:420px; line-height:1.6; margin-bottom:20px;">You found the secret page. Stay weird. Stay downloading.</p>
-        <div style="font-size:3rem; margin-bottom:20px;">👾🎮✨</div>
-        <button type="button" class="btn-play btn-download" style="padding:12px 28px;" onclick="document.getElementById('secretPage').style.display='none'">Close Vault</button>
     </div>
+
+<!-- Live Chatroom sub-page -->
+<div id="chatRoom" style="display:none; position:fixed; inset:0; z-index:35000; background:var(--void); flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--glass-border); background:rgba(4,4,10,0.92); backdrop-filter:blur(12px);">
+        <div>
+            <div style="font-family:'Orbitron',monospace; color:var(--neon); letter-spacing:2px; font-size:0.95rem;">◈ KVG CHAT</div>
+            <div style="font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:2px;"><span class="live-dot"></span>Live room</div>
+        </div>
+        <button type="button" onclick="closeChatRoom()" style="background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); color:var(--text); border-radius:10px; padding:8px 14px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.7rem;">Close</button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; max-width:720px; width:100%; margin:0 auto;"></div>
+    <div style="border-top:1px solid var(--glass-border); padding:14px 20px; background:rgba(4,4,10,0.95);">
+        <div style="max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:8px;">
+            <input type="text" id="chatName" placeholder="Your name" maxlength="20" style="width:100%; padding:10px 14px; background:rgba(0,0,0,0.45); border:1px solid var(--glass-border); border-radius:10px; color:white; font-family:Syne,sans-serif;">
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="chatMsg" placeholder="Say something…" maxlength="200" style="flex:1; padding:12px 14px; background:rgba(0,0,0,0.45); border:1px solid var(--glass-border); border-radius:10px; color:white; font-family:Syne,sans-serif;" onkeydown="if(event.key==='Enter')sendChat()">
+                <button type="button" class="btn-play btn-download" style="padding:12px 20px;" onclick="sendChat()">Send</button>
+            </div>
+            <p id="chatStatus" style="font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); margin:0;"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Konami secret page -->
+<div id="secretPage" style="display:none; position:fixed; inset:0; z-index:40000; background:rgba(4,4,10,0.96); align-items:center; justify-content:center; flex-direction:column; padding:30px; text-align:center;">
+    <div style="font-family:'Orbitron',monospace; font-size:clamp(1.5rem,5vw,2.5rem); color:var(--neon); margin-bottom:12px; text-shadow:0 0 30px rgba(0,255,136,0.4);">◈ KVG VAULT</div>
+    <p style="color:var(--muted); max-width:420px; line-height:1.6; margin-bottom:20px;">You found the secret page. Stay weird. Stay downloading.</p>
+    <div style="font-size:3rem; margin-bottom:20px;">👾🎮✨</div>
+    <button type="button" class="btn-play btn-download" style="padding:12px 28px;" onclick="document.getElementById('secretPage').style.display='none'">Close Vault</button>
 </div>
 
 <footer>
@@ -600,25 +620,34 @@
         if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
     });
 
-    // Approved guestbook messages
+    // Live chat messages (guestbook path = chat)
     onValue(ref(db, 'guestbook'), (snap) => {
         const data = snap.val() || {};
-        const approved = Object.values(data)
-            .filter(e => e && e.approved && e.msg)
-            .sort((a,b) => (b.ts||0) - (a.ts||0))
-            .slice(0, 20);
-        const el = document.getElementById('guestbookList');
+        const msgs = Object.values(data)
+            .filter(e => e && e.msg)
+            .sort((a,b) => (a.ts||0) - (b.ts||0))
+            .slice(-100);
+        const el = document.getElementById('chatMessages');
         if (!el) return;
-        if (!approved.length) {
-            el.innerHTML = '<span style="color:var(--muted);font-size:0.75rem;">No messages yet. Be the first!</span>';
+        if (!msgs.length) {
+            el.innerHTML = '<div style="color:var(--muted);font-family:Space Mono,monospace;font-size:0.8rem;text-align:center;margin-top:40px;">No messages yet — say hi!</div>';
             return;
         }
-        el.innerHTML = approved.map(e =>
-            `<div style="padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:8px;border:1px solid var(--glass-border);">
-                <div style="color:var(--ice);font-size:0.72rem;margin-bottom:3px;">${(e.name||'Anon').replace(/</g,'&lt;')}</div>
-                <div style="color:var(--text);font-size:0.8rem;line-height:1.35;">${(e.msg||'').replace(/</g,'&lt;')}</div>
-            </div>`
-        ).join('');
+        const myName = (localStorage.getItem('kvg_chat_name') || '').toLowerCase();
+        el.innerHTML = msgs.map(e => {
+            const name = (e.name || 'Anon').replace(/</g,'&lt;');
+            const msg = (e.msg || '').replace(/</g,'&lt;');
+            const mine = myName && name.toLowerCase() === myName;
+            const time = e.ts ? new Date(e.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+            return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'}; max-width:85%;">
+                <div style="font-family:Space Mono,monospace; font-size:0.65rem; color:var(--muted); margin-bottom:3px; text-align:${mine ? 'right' : 'left'};">${name} · ${time}</div>
+                <div style="padding:10px 14px; border-radius:14px; line-height:1.4; font-size:0.9rem;
+                    background:${mine ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.06)'};
+                    border:1px solid ${mine ? 'rgba(0,255,136,0.3)' : 'var(--glass-border)'};
+                    color:var(--text);">${msg}</div>
+            </div>`;
+        }).join('');
+        el.scrollTop = el.scrollHeight;
     });
 
     window.logDownload = async function(title, thumb) {
@@ -865,20 +894,34 @@
         launchInterval = setInterval(tick, 1000);
     };
 
-    window.submitGuestbook = async function() {
-        const name = (document.getElementById('gbName').value || '').trim().slice(0, 20);
-        const msg = (document.getElementById('gbMsg').value || '').trim().slice(0, 120);
-        const st = document.getElementById('gbStatus');
+    window.openChatRoom = function() {
+        const room = document.getElementById('chatRoom');
+        room.style.display = 'flex';
+        const saved = localStorage.getItem('kvg_chat_name') || '';
+        if (saved) document.getElementById('chatName').value = saved;
+        setTimeout(() => {
+            const el = document.getElementById('chatMessages');
+            if (el) el.scrollTop = el.scrollHeight;
+            document.getElementById('chatMsg').focus();
+        }, 50);
+    };
+    window.closeChatRoom = function() {
+        document.getElementById('chatRoom').style.display = 'none';
+    };
+    window.sendChat = async function() {
+        const name = (document.getElementById('chatName').value || '').trim().slice(0, 20);
+        const msg = (document.getElementById('chatMsg').value || '').trim().slice(0, 200);
+        const st = document.getElementById('chatStatus');
         if (!name || !msg) { st.textContent = 'Name and message required'; st.style.color = 'var(--hot)'; return; }
         try {
+            localStorage.setItem('kvg_chat_name', name);
             const db = window._db;
             if (!db) throw new Error('Not connected');
             await window._fb.push(window._fb.ref(db, 'guestbook'), {
-                name, msg, ts: Date.now(), approved: false
+                name, msg, ts: Date.now()
             });
-            document.getElementById('gbMsg').value = '';
-            st.textContent = 'Submitted — waiting for admin approval';
-            st.style.color = 'var(--neon)';
+            document.getElementById('chatMsg').value = '';
+            st.textContent = '';
         } catch (e) {
             st.textContent = 'Error: ' + e.message;
             st.style.color = 'var(--hot)';
