@@ -707,6 +707,16 @@
                 location.reload();
             }
         }
+
+        // Remote confetti from admin
+        if (cfg.confettiToken) {
+            if (window._lastConfettiToken === undefined) {
+                window._lastConfettiToken = cfg.confettiToken;
+            } else if (cfg.confettiToken !== window._lastConfettiToken) {
+                window._lastConfettiToken = cfg.confettiToken;
+                if (typeof fireConfetti === 'function') fireConfetti();
+            }
+        }
     }
 
     function showBroadcast(msg, token) {
@@ -979,10 +989,7 @@
     };
 
     window.playRandomDownloadable = function() {
-        const list = downloadableGames.filter(g => {
-            const hidden = ((window._siteCfg && window._siteCfg.hiddenGames) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-            return !hidden.includes((g.title || '').toLowerCase());
-        });
+        const list = downloadableGames.filter(g => !window.isHiddenGame(g.title));
         if (!list.length) return alert('No downloadable games loaded yet');
         const g = list[Math.floor(Math.random() * list.length)];
         triggerDownload(g.url, g.title, g.thumb);
@@ -1003,44 +1010,52 @@
         if (btn) btn.classList.toggle('show', window.scrollY > 400);
     });
 
+    window.isHiddenGame = function(title) {
+        const hidden = ((window._siteCfg && window._siteCfg.hiddenGames) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        if (!hidden.length) return false;
+        const t = (title || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        const tNoSpace = t.replace(/\s/g, '');
+        for (const h of hidden) {
+            const hh = h.replace(/\s+/g, ' ').trim();
+            const hNoSpace = hh.replace(/\s/g, '');
+            if (!hh) continue;
+            if (t === hh || tNoSpace === hNoSpace || t.includes(hh) || hh.includes(t) || tNoSpace.includes(hNoSpace) || hNoSpace.includes(tNoSpace)) return true;
+        }
+        return false;
+    };
+
     window.renderDownloadableGames = function(filtered = null) {
         const list = document.getElementById('download-list');
-        const hidden = ((window._siteCfg && window._siteCfg.hiddenGames) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
         let games = filtered || downloadableGames.slice();
-        games = games.filter(g => !hidden.includes((g.title || '').toLowerCase()));
+        games = games.filter(g => !window.isHiddenGame(g.title));
         const favs = getFavorites();
         if (window._showFavsOnly) {
             games = games.filter(g => favs.includes(g.title));
         }
-        // support multiple featured: comma-separated
         const featuredRaw = (window._siteCfg && window._siteCfg.featuredGame) || '';
         const featuredSet = new Set(featuredRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+        const isFeatTitle = (title) => {
+            const t = (title || '').toLowerCase().replace(/\s+/g, ' ').trim();
+            const tNS = t.replace(/\s/g, '');
+            if (featuredSet.has(t)) return true;
+            for (const f of featuredSet) {
+                if (!f) continue;
+                const ff = f.replace(/\s+/g, ' ').trim();
+                const fNS = ff.replace(/\s/g, '');
+                if (t === ff || tNS === fNS || t.includes(ff) || ff.includes(t) || tNS.includes(fNS) || fNS.includes(tNS)) return true;
+            }
+            return false;
+        };
+        // Always pin featured to the very top
         if (featuredSet.size && !window._showFavsOnly) {
-            games = games.slice().sort((a,b) => {
-                const match = (title) => {
-                    const t = (title || '').toLowerCase();
-                    if (featuredSet.has(t)) return true;
-                    for (const f of featuredSet) { if (f && (t.includes(f) || f.includes(t))) return true; }
-                    return false;
-                };
-                const af = match(a.title) ? 0 : 1;
-                const bf = match(b.title) ? 0 : 1;
-                return af - bf;
-            });
+            const top = [];
+            const rest = [];
+            games.forEach(g => (isFeatTitle(g.title) ? top : rest).push(g));
+            games = top.concat(rest);
         }
         const newList = ((window._siteCfg && window._siteCfg.newGames) || '').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
         const newSticker = `<div class="sticker-new" title="New"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon fill="#e53935" points="50,2 61,18 80,12 78,32 96,40 82,54 94,70 74,72 70,92 50,80 30,92 26,72 6,70 18,54 4,40 22,32 20,12 39,18"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-family="Orbitron,Arial Black,sans-serif" font-size="22" font-weight="900" transform="rotate(-18 50 50)">NEW</text></svg></div>`;
         const featRibbon = `<div class="sticker-featured">Featured</div>`;
-        // fuzzy match helper: exact or title contains featured name or vice versa
-        const isFeatTitle = (title) => {
-            const t = (title || '').toLowerCase();
-            if (featuredSet.has(t)) return true;
-            for (const f of featuredSet) {
-                if (!f) continue;
-                if (t.includes(f) || f.includes(t)) return true;
-            }
-            return false;
-        };
         const isNewTitle = (title) => {
             const t = (title || '').toLowerCase();
             if (newList.includes(t)) return true;
@@ -1081,7 +1096,7 @@
 
     window.renderWebGames = function() {
         const favs = getFavorites();
-        let list = webGames.slice();
+        let list = webGames.slice().filter(g => !window.isHiddenGame(g.title));
         if (window._showFavsOnly) list = list.filter(g => favs.includes(g.title));
         const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
         if (q) list = list.filter(g => g.title.toLowerCase().includes(q));
@@ -1091,11 +1106,22 @@
         const newSticker = `<div class="sticker-new" title="New"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon fill="#e53935" points="50,2 61,18 80,12 78,32 96,40 82,54 94,70 74,72 70,92 50,80 30,92 26,72 6,70 18,54 4,40 22,32 20,12 39,18"/><text x="50" y="58" text-anchor="middle" fill="#fff" font-family="Orbitron,Arial Black,sans-serif" font-size="22" font-weight="900" transform="rotate(-18 50 50)">NEW</text></svg></div>`;
         const featRibbon = `<div class="sticker-featured">Featured</div>`;
         const matchSet = (title, set) => {
-            const t = (title || '').toLowerCase();
-            if (set.has(t)) return true;
-            for (const f of set) { if (f && (t.includes(f) || f.includes(t))) return true; }
+            const t = (title || '').toLowerCase().replace(/\s+/g, ' ').trim();
+            const tNS = t.replace(/\s/g, '');
+            for (const f of set) {
+                if (!f) continue;
+                const ff = String(f).replace(/\s+/g, ' ').trim();
+                const fNS = ff.replace(/\s/g, '');
+                if (t === ff || tNS === fNS || t.includes(ff) || ff.includes(t) || tNS.includes(fNS) || fNS.includes(tNS)) return true;
+            }
             return false;
         };
+        // Pin featured web games to top
+        if (featuredSet.size && !window._showFavsOnly) {
+            const top = [], rest = [];
+            list.forEach(g => (matchSet(g.title, featuredSet) ? top : rest).push(g));
+            list = top.concat(rest);
+        }
         document.getElementById('web-games-list').innerHTML = list.map(g => {
             const isFav = favs.includes(g.title);
             const isNew = matchSet(g.title, new Set(newList));
