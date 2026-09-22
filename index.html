@@ -284,18 +284,43 @@
         .fav-btn:hover, .fav-btn.on { opacity: 1; }
         .fav-btn.on { filter: drop-shadow(0 0 6px rgba(255,58,110,0.6)); }
 
-        #gameOfDay { display: none; max-width: 640px; margin: 0 auto 24px; padding: 0 20px; }
+        #gameOfDay { display: none; max-width: 720px; margin: 0 auto 28px; padding: 0 20px; }
         #gameOfDay.active { display: block; }
         #gameOfDay .inner {
-            background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(0,255,136,0.08));
-            border: 1px solid rgba(255,215,0,0.35); border-radius: 14px;
-            padding: 16px 20px; text-align: center;
+            background: linear-gradient(135deg, rgba(255,215,0,0.14), rgba(0,255,136,0.08));
+            border: 1px solid rgba(255,215,0,0.4); border-radius: 20px;
+            padding: 18px; display: flex; gap: 18px; align-items: center;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(255,215,0,0.08);
         }
+        #gameOfDay .god-thumb {
+            width: 120px; height: 120px; flex-shrink: 0;
+            border-radius: 14px; overflow: hidden; background: #080810;
+            border: 1px solid rgba(255,215,0,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.8rem; position: relative;
+        }
+        #gameOfDay .god-thumb img {
+            width: 100%; height: 100%; object-fit: contain; background: #000;
+        }
+        #gameOfDay .god-info { flex: 1; min-width: 0; text-align: left; }
         #gameOfDay .label {
-            font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            font-family: 'Space Mono', monospace; font-size: 0.68rem;
             color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
         }
-        #gameOfDay .name { font-family: 'Orbitron', monospace; font-size: 1.1rem; color: white; }
+        #gameOfDay .name {
+            font-family: 'Orbitron', monospace; font-size: 1.25rem; color: white;
+            margin-bottom: 6px; line-height: 1.2;
+        }
+        #gameOfDay .god-meta {
+            font-family: 'Space Mono', monospace; font-size: 0.72rem;
+            color: var(--muted); margin-bottom: 14px;
+        }
+        #gameOfDay .god-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        @media (max-width: 520px) {
+            #gameOfDay .inner { flex-direction: column; text-align: center; }
+            #gameOfDay .god-info { text-align: center; }
+            #gameOfDay .god-actions { justify-content: center; }
+        }
 
         .action-bar {
             display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
@@ -369,8 +394,13 @@
 
 <div id="gameOfDay">
     <div class="inner">
-        <div class="label">◈ Game of the Day</div>
-        <div class="name" id="gameOfDayName">—</div>
+        <div class="god-thumb" id="gameOfDayThumb">🎮</div>
+        <div class="god-info">
+            <div class="label">◈ Game of the Day</div>
+            <div class="name" id="gameOfDayName">—</div>
+            <div class="god-meta" id="gameOfDayMeta"></div>
+            <div class="god-actions" id="gameOfDayActions"></div>
+        </div>
     </div>
 </div>
 
@@ -626,13 +656,7 @@
         }
 
         // Game of the Day
-        const god = document.getElementById('gameOfDay');
-        if (cfg.gameOfTheDay && cfg.gameOfTheDay.trim()) {
-            document.getElementById('gameOfDayName').textContent = cfg.gameOfTheDay.trim();
-            god.classList.add('active');
-        } else {
-            god.classList.remove('active');
-        }
+        window.renderGameOfDay && window.renderGameOfDay();
 
         // Announcement + auto-hide
         const banner = document.getElementById('announcementBanner');
@@ -750,6 +774,49 @@
     window.dismissAnnouncement = function() {
         announcementDismissed = true;
         document.getElementById('announcementBanner').classList.remove('active');
+    };
+
+    window.renderGameOfDay = function() {
+        const cfg = window._siteCfg || {};
+        const god = document.getElementById('gameOfDay');
+        const name = (cfg.gameOfTheDay || '').trim();
+        if (!name) {
+            god.classList.remove('active');
+            return;
+        }
+        god.classList.add('active');
+        document.getElementById('gameOfDayName').textContent = name;
+
+        const matchName = (title) => {
+            const t = (title || '').toLowerCase();
+            const n = name.toLowerCase();
+            return t === n || t.includes(n) || n.includes(t);
+        };
+
+        const dl = (typeof downloadableGames !== 'undefined' ? downloadableGames : []).find(g => matchName(g.title));
+        const web = (typeof webGames !== 'undefined' ? webGames : []).find(g => matchName(g.title));
+        const thumbEl = document.getElementById('gameOfDayThumb');
+        const metaEl = document.getElementById('gameOfDayMeta');
+        const actionsEl = document.getElementById('gameOfDayActions');
+        const esc = (s) => String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+        if (dl) {
+            if (dl.thumb && String(dl.thumb).startsWith('http')) {
+                thumbEl.innerHTML = `<img src="${dl.thumb}" alt="">`;
+            } else {
+                thumbEl.innerHTML = '🎮';
+            }
+            metaEl.textContent = `${dl.size || '?'} MB · Downloadable PC game`;
+            actionsEl.innerHTML = `<button type="button" class="btn-play btn-download" style="padding:12px 26px; font-size:0.78rem;" onclick="triggerDownload('${esc(dl.url)}', '${esc(dl.title)}', '${esc(dl.thumb)}')">Download Now</button>`;
+        } else if (web) {
+            thumbEl.innerHTML = `<span style="font-size:2.8rem;">${web.thumb || '🎮'}</span>`;
+            metaEl.textContent = `${web.tag || 'WEB'} · Play instantly in browser`;
+            actionsEl.innerHTML = `<a href="${web.url}" target="_blank" class="btn-play btn-play-web" style="padding:12px 26px; font-size:0.78rem; text-decoration:none;">Play Now</a>`;
+        } else {
+            thumbEl.innerHTML = '🎮';
+            metaEl.textContent = 'Loading game details…';
+            actionsEl.innerHTML = '';
+        }
     };
 
     window.renderTimers = function() {
@@ -876,6 +943,7 @@
             document.getElementById('stat-games').textContent = downloadableGames.length + webGames.length;
             renderDownloadableGames();
             renderWebGames();
+            if (window.renderGameOfDay) window.renderGameOfDay();
         } catch(e) { console.error(e); }
     }
 
