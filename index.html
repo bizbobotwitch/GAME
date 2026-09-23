@@ -355,6 +355,9 @@
     <span id="announcementText"></span>
     <button class="close-btn" onclick="dismissAnnouncement()" title="Dismiss">×</button>
 </div>
+<div id="shoutoutBanner" style="display:none; position:relative; z-index:149; background:linear-gradient(90deg,rgba(255,215,0,0.18),rgba(0,255,136,0.1)); border-bottom:1px solid rgba(255,215,0,0.4); padding:12px 40px; text-align:center; font-family:Orbitron,monospace; color:var(--gold); letter-spacing:1px; font-size:0.95rem;">
+    <span id="shoutoutText"></span>
+</div>
 
 <!-- Maintenance Overlay -->
 <div id="maintenanceOverlay">
@@ -448,6 +451,13 @@
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--hot); margin-bottom:15px; letter-spacing: 2px;">◈ HOT RIGHT NOW</h3>
             <div id="hotList" style="font-family:'Space Mono'; font-size:0.78rem; color:var(--muted);">Loading…</div>
+        </div>
+
+        <div id="pollBox" style="display:none; background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
+            <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--gold); margin-bottom:10px; letter-spacing: 2px;">◈ POLL</h3>
+            <div id="pollQuestion" style="font-family:Syne,sans-serif; color:white; margin-bottom:12px; font-size:0.95rem;"></div>
+            <div id="pollOptions" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p id="pollStatus" style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted); margin-top:10px;"></p>
         </div>
 
         <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
@@ -626,6 +636,11 @@
             }
         }
         if (entries.length) lastSeenDownloadKey = entries[entries.length-1][0];
+    });
+
+    // Live poll vote updates
+    onValue(ref(db, 'pollVotes'), (snap) => {
+        if (typeof renderPoll === 'function' && window._siteCfg) renderPoll(window._siteCfg);
     });
 
     // Live chat messages (guestbook path = chat)
@@ -825,15 +840,35 @@
             }
         }
 
-        // Remote Gabe Mode from admin (10 seconds)
+        // Remote Gabe Mode from admin
         if (cfg.gabeToken) {
             if (window._lastGabeToken === undefined) {
                 window._lastGabeToken = cfg.gabeToken;
             } else if (cfg.gabeToken !== window._lastGabeToken) {
                 window._lastGabeToken = cfg.gabeToken;
-                if (typeof activateGabeMode === 'function') activateGabeMode();
+                const secs = parseInt(cfg.gabeDuration, 10) || 10;
+                if (typeof activateGabeMode === 'function') activateGabeMode(secs);
             }
         }
+
+        // Shoutout banner (timed)
+        const shout = document.getElementById('shoutoutBanner');
+        if (shout) {
+            if (cfg.shoutoutMsg && cfg.shoutoutUntil && Date.now() < cfg.shoutoutUntil) {
+                document.getElementById('shoutoutText').textContent = cfg.shoutoutMsg;
+                shout.style.display = 'block';
+            } else {
+                shout.style.display = 'none';
+            }
+        }
+
+        // Freeze downloads
+        window._freezeDownloads = !!cfg.freezeDownloads;
+        if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+        if (typeof renderGameOfDay === 'function') renderGameOfDay();
+
+        // Poll
+        if (typeof renderPoll === 'function') renderPoll(cfg);
     }
 
     function showBroadcast(msg, token) {
@@ -1008,7 +1043,7 @@
         };
 
         const dl = (typeof downloadableGames !== 'undefined' ? downloadableGames : []).find(g => matchName(g.title));
-        const web = (typeof webGames !== 'undefined' ? webGames : []).find(g => matchName(g.title));
+        const web = (window.webGames || []).find(g => matchName(g.title));
         const thumbEl = document.getElementById('gameOfDayThumb');
         const metaEl = document.getElementById('gameOfDayMeta');
         const actionsEl = document.getElementById('gameOfDayActions');
@@ -1021,7 +1056,9 @@
                 thumbEl.innerHTML = '🎮';
             }
             metaEl.textContent = `${dl.size || '?'} MB · Downloadable PC game`;
-            actionsEl.innerHTML = `<button type="button" class="btn-play btn-download" style="padding:12px 26px; font-size:0.78rem;" onclick="triggerDownload('${esc(dl.url)}', '${esc(dl.title)}', '${esc(dl.thumb)}')">Download Now</button>`;
+            actionsEl.innerHTML = window._freezeDownloads
+                ? `<button type="button" class="btn-play" style="padding:12px 26px; font-size:0.78rem; background:#333;color:#888;cursor:not-allowed;" disabled>LOCKED</button>`
+                : `<button type="button" class="btn-play btn-download" style="padding:12px 26px; font-size:0.78rem;" onclick="triggerDownload('${esc(dl.url)}', '${esc(dl.title)}', '${esc(dl.thumb)}')">Download Now</button>`;
         } else if (web) {
             thumbEl.innerHTML = `<span style="font-size:2.8rem;">${web.thumb || '🎮'}</span>`;
             metaEl.textContent = `${web.tag || 'WEB'} · Play instantly in browser`;
@@ -1072,7 +1109,7 @@
         if (window.siteTimers.length > 0) window.renderTimers();
     }, 1000);
 
-    const webGames = [
+    const defaultWebGames = [
         { title: "Subway Surfers", url: "https://bizbobotwitch.github.io/druskii128.github.io/subway-surfers.html", thumb: "🏃‍♂️", tag: "ARCADE" },
         { title: "Keith Valley Fisher", url: "https://bizbobotwitch.github.io/Keith-Valley-Fisher/", thumb: "🎣", tag: "ADVENTURE" },
         { title: "Polytrack", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/polytrack/index.html", thumb: "🏎️", tag: "RACING" },
@@ -1088,10 +1125,47 @@
         { title: "2048", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/2048/index.html", thumb: "🔢", tag: "PUZZLE" },
         { title: "Cookie Clicker", url: "https://bizbobotwitch.github.io/druskii128.github.io/projects/cookie-clicker/index.html", thumb: "🍪", tag: "IDLE" }
     ];
+    window.customWebGames = [];
+    window.webGames = defaultWebGames.slice();
+    function rebuildWebGames() {
+        // custom first so new admin games show near the top, then defaults (skip title dupes)
+        const seen = new Set();
+        const merged = [];
+        (window.customWebGames || []).forEach(g => {
+            if (!g || !g.title || !g.url) return;
+            const k = g.title.toLowerCase();
+            if (seen.has(k)) return;
+            seen.add(k);
+            merged.push({ title: g.title, url: g.url, thumb: g.thumb || '🎮', tag: g.tag || 'WEB', custom: true });
+        });
+        defaultWebGames.forEach(g => {
+            const k = g.title.toLowerCase();
+            if (seen.has(k)) return;
+            seen.add(k);
+            merged.push(g);
+        });
+        window.webGames = merged;
+        const stat = document.getElementById('stat-web-count');
+        if (stat) stat.textContent = String(window.webGames.length);
+        const total = document.getElementById('stat-games');
+        if (total && typeof downloadableGames !== 'undefined') total.textContent = downloadableGames.length + window.webGames.length;
+        if (typeof renderWebGames === 'function') renderWebGames();
+        if (typeof renderGameOfDay === 'function') renderGameOfDay();
+    }
+    // Custom web games from admin (Firebase)
+    onValue(ref(db, 'customWebGames'), (snap) => {
+        const data = snap.val() || {};
+        window.customWebGames = Object.entries(data).map(([key, g]) => ({ key, ...g }));
+        rebuildWebGames();
+    });
 
     let pendingDownload = null;
 
     window.triggerDownload = function(url, title, thumb) {
+        if (window._freezeDownloads) {
+            alert('Downloads are temporarily frozen by the admin. Try again later!');
+            return;
+        }
         pendingDownload = { url, title, thumb };
         document.getElementById('downloadModal').style.display = 'flex';
     };
@@ -1154,7 +1228,7 @@
                     return { title, url: asset.browser_download_url, size: (asset.size / 1048576).toFixed(1), thumb };
                 });
 
-            document.getElementById('stat-games').textContent = downloadableGames.length + webGames.length;
+            document.getElementById('stat-games').textContent = downloadableGames.length + (window.webGames || []).length;
             renderDownloadableGames();
             renderWebGames();
             if (window.renderGameOfDay) window.renderGameOfDay();
@@ -1199,8 +1273,9 @@
         triggerDownload(g.url, g.title, g.thumb);
     };
     window.playRandomWeb = function() {
-        if (!webGames.length) return;
-        const g = webGames[Math.floor(Math.random() * webGames.length)];
+        const list = window.webGames || [];
+        if (!list.length) return;
+        const g = list[Math.floor(Math.random() * list.length)];
         window.open(g.url, '_blank');
     };
     // keep old name working
@@ -1213,8 +1288,11 @@
     window._gabeTimer = null;
     const GABE_URL = "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
 
-    window.activateGabeMode = function() {
-        if (window._gabeMode) return;
+    window.activateGabeMode = function(seconds) {
+        const secs = Math.max(1, parseInt(seconds, 10) || 10);
+        if (window._gabeMode) {
+            if (window._gabeTimer) clearTimeout(window._gabeTimer);
+        }
         window._gabeMode = true;
         document.querySelectorAll('.thumb-box').forEach(box => {
             box.innerHTML = `<img src="${GABE_URL}" class="thumb-img" alt="gabe">`;
@@ -1227,7 +1305,67 @@
             if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
             if (typeof renderWebGames === 'function') renderWebGames();
             if (typeof renderGameOfDay === 'function') renderGameOfDay();
-        }, 10000);
+        }, secs * 1000);
+    };
+
+    window.renderPoll = function(cfg) {
+        const box = document.getElementById('pollBox');
+        if (!box) return;
+        const q = (cfg && cfg.pollQuestion) ? String(cfg.pollQuestion).trim() : '';
+        const opts = (cfg && cfg.pollOptions) ? String(cfg.pollOptions).split(',').map(s => s.trim()).filter(Boolean) : [];
+        if (!q || opts.length < 2) {
+            box.style.display = 'none';
+            return;
+        }
+        box.style.display = 'block';
+        document.getElementById('pollQuestion').textContent = q;
+        window._pollOpts = opts;
+        // load votes
+        if (window._db && window._fb) {
+            window._fb.get(window._fb.ref(window._db, 'pollVotes')).then(snap => {
+                const votes = snap.val() || {};
+                drawPollOptions(opts, votes);
+            }).catch(() => drawPollOptions(opts, {}));
+        } else {
+            drawPollOptions(opts, {});
+        }
+    };
+
+    function drawPollOptions(opts, votes) {
+        const el = document.getElementById('pollOptions');
+        if (!el) return;
+        const total = opts.reduce((s, _, i) => s + (votes[i] || votes[String(i)] || 0), 0);
+        const voted = localStorage.getItem('kvg_poll_vote');
+        const pollId = (window._siteCfg && window._siteCfg.pollId) || 'default';
+        const already = voted && voted.startsWith(pollId + ':');
+        el.innerHTML = opts.map((opt, i) => {
+            const n = votes[i] || votes[String(i)] || 0;
+            const pct = total ? Math.round((n / total) * 100) : 0;
+            if (already) {
+                return `<div style="padding:10px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);">
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;"><span>${opt}</span><span style="color:var(--neon);">${pct}%</span></div>
+                    <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--neon);"></div></div>
+                </div>`;
+            }
+            return `<button type="button" onclick="castPollVote(${i})" style="text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);color:white;cursor:pointer;font-family:Syne,sans-serif;">${opt}</button>`;
+        }).join('');
+        const st = document.getElementById('pollStatus');
+        if (st) st.textContent = already ? (total + ' vote' + (total===1?'':'s')) : 'Pick one — live results after you vote';
+    }
+
+    window.castPollVote = async function(idx) {
+        const pollId = (window._siteCfg && window._siteCfg.pollId) || 'default';
+        if (localStorage.getItem('kvg_poll_vote') && localStorage.getItem('kvg_poll_vote').startsWith(pollId + ':')) return;
+        try {
+            const db = window._db;
+            const r = window._fb.ref(db, 'pollVotes/' + idx);
+            const snap = await window._fb.get(r);
+            await window._fb.set(r, (snap.val() || 0) + 1);
+            localStorage.setItem('kvg_poll_vote', pollId + ':' + idx);
+            if (typeof renderPoll === 'function') renderPoll(window._siteCfg || {});
+        } catch (e) {
+            document.getElementById('pollStatus').textContent = 'Vote failed';
+        }
     };
 
     window.addEventListener('scroll', () => {
@@ -1314,7 +1452,9 @@
                         <span style="font-family:'Space Mono'; font-size:0.7rem; color:var(--muted);">${g.size} MB</span>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <button type="button" class="btn-report" onclick="reportBroken('${esc(g.title)}')" title="Report broken download">⚠ Report</button>
-                            <button onclick="triggerDownload('${esc(g.url)}', '${esc(g.title)}', '${esc(g.thumb)}')" class="btn-play btn-download">Download</button>
+                            ${window._freezeDownloads
+                                ? `<button type="button" class="btn-play" style="background:#333;color:#888;cursor:not-allowed;" disabled>LOCKED</button>`
+                                : `<button onclick="triggerDownload('${esc(g.url)}', '${esc(g.title)}', '${esc(g.thumb)}')" class="btn-play btn-download">Download</button>`}
                         </div>
                     </div>
                 </div>
@@ -1324,7 +1464,7 @@
 
     window.renderWebGames = function() {
         const favs = getFavorites();
-        let list = webGames.slice().filter(g => !window.isHiddenGame(g.title));
+        let list = (window.webGames || []).slice().filter(g => !window.isHiddenGame(g.title));
         if (window._showFavsOnly) list = list.filter(g => favs.includes(g.title));
         const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
         if (q) list = list.filter(g => g.title.toLowerCase().includes(q));
