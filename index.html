@@ -698,6 +698,13 @@
         window.gameDownloadCounts = snap.val() || {};
         if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
     });
+
+    // Custom web games from admin
+    onValue(ref(db, 'customWebGames'), (snap) => {
+        const data = snap.val() || {};
+        window.customWebGames = Object.entries(data).map(([key, g]) => ({ key, ...g }));
+        if (typeof window.rebuildWebGames === 'function') window.rebuildWebGames();
+    });
 </script>
 
 <script>
@@ -1127,8 +1134,7 @@
     ];
     window.customWebGames = [];
     window.webGames = defaultWebGames.slice();
-    function rebuildWebGames() {
-        // custom first so new admin games show near the top, then defaults (skip title dupes)
+    window.rebuildWebGames = function() {
         const seen = new Set();
         const merged = [];
         (window.customWebGames || []).forEach(g => {
@@ -1151,13 +1157,9 @@
         if (total && typeof downloadableGames !== 'undefined') total.textContent = downloadableGames.length + window.webGames.length;
         if (typeof renderWebGames === 'function') renderWebGames();
         if (typeof renderGameOfDay === 'function') renderGameOfDay();
-    }
-    // Custom web games from admin (Firebase)
-    onValue(ref(db, 'customWebGames'), (snap) => {
-        const data = snap.val() || {};
-        window.customWebGames = Object.entries(data).map(([key, g]) => ({ key, ...g }));
-        rebuildWebGames();
-    });
+    };
+    // in case Firebase already delivered custom games before this ran
+    if (window.customWebGames && window.customWebGames.length) window.rebuildWebGames();
 
     let pendingDownload = null;
 
