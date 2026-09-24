@@ -847,17 +847,6 @@
             }
         }
 
-        // Remote Gabe Mode from admin
-        if (cfg.gabeToken) {
-            if (window._lastGabeToken === undefined) {
-                window._lastGabeToken = cfg.gabeToken;
-            } else if (cfg.gabeToken !== window._lastGabeToken) {
-                window._lastGabeToken = cfg.gabeToken;
-                const secs = parseInt(cfg.gabeDuration, 10) || 10;
-                if (typeof activateGabeMode === 'function') activateGabeMode(secs);
-            }
-        }
-
         // Shoutout banner (timed)
         const shout = document.getElementById('shoutoutBanner');
         if (shout) {
@@ -872,10 +861,24 @@
         // Freeze downloads
         window._freezeDownloads = !!cfg.freezeDownloads;
         if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+        if (typeof renderWebGames === 'function') renderWebGames();
         if (typeof renderGameOfDay === 'function') renderGameOfDay();
 
         // Poll
         if (typeof renderPoll === 'function') renderPoll(cfg);
+
+        // Remote Gabe Mode LAST so re-renders don't wipe it
+        if (cfg.gabeToken) {
+            if (window._lastGabeToken === undefined) {
+                window._lastGabeToken = cfg.gabeToken;
+            } else if (cfg.gabeToken !== window._lastGabeToken) {
+                window._lastGabeToken = cfg.gabeToken;
+                const secs = parseInt(cfg.gabeDuration, 10) || 10;
+                if (typeof activateGabeMode === 'function') activateGabeMode(secs);
+            } else if (window._gabeMode && typeof applyGabeThumbs === 'function') {
+                applyGabeThumbs();
+            }
+        }
     }
 
     function showBroadcast(msg, token) {
@@ -1288,20 +1291,32 @@
 
     window._gabeMode = false;
     window._gabeTimer = null;
-    const GABE_URL = "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
+    window.GABE_URL = "https://github.com/bizbobotwitch/GAME/releases/download/Games/gabe.png";
+
+    window.applyGabeThumbs = function() {
+        const url = window.GABE_URL;
+        document.querySelectorAll('.thumb-box').forEach(box => {
+            box.innerHTML = `<img src="${url}" class="thumb-img" alt="gabe" style="width:100%;height:100%;object-fit:contain;background:#000;position:relative;z-index:1;">`;
+        });
+        // also any standalone game images
+        document.querySelectorAll('#download-list img.thumb-img, #web-games-list img.thumb-img').forEach(img => {
+            img.src = url;
+        });
+        const god = document.getElementById('gameOfDayThumb');
+        if (god) god.innerHTML = `<img src="${url}" alt="gabe" style="width:100%;height:100%;object-fit:contain;">`;
+    };
 
     window.activateGabeMode = function(seconds) {
         const secs = Math.max(1, parseInt(seconds, 10) || 10);
-        if (window._gabeMode) {
-            if (window._gabeTimer) clearTimeout(window._gabeTimer);
-        }
-        window._gabeMode = true;
-        document.querySelectorAll('.thumb-box').forEach(box => {
-            box.innerHTML = `<img src="${GABE_URL}" class="thumb-img" alt="gabe">`;
-        });
-        const god = document.getElementById('gameOfDayThumb');
-        if (god) god.innerHTML = `<img src="${GABE_URL}" alt="gabe">`;
         if (window._gabeTimer) clearTimeout(window._gabeTimer);
+        window._gabeMode = true;
+        // Force both lists visible thumbs (even if one tab is hidden)
+        if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
+        if (typeof renderWebGames === 'function') renderWebGames();
+        applyGabeThumbs();
+        // re-apply shortly in case async re-render races
+        setTimeout(applyGabeThumbs, 50);
+        setTimeout(applyGabeThumbs, 300);
         window._gabeTimer = setTimeout(() => {
             window._gabeMode = false;
             if (typeof renderDownloadableGames === 'function') renderDownloadableGames();
@@ -1442,7 +1457,9 @@
             return `
             <div class="card-item ${isFeatured ? 'featured-card' : ''}">
                 <div class="thumb-box">
-                    ${g.thumb ? `<img src="${g.thumb}" class="thumb-img">` : `<span style="font-size:2rem; position:relative; z-index:2;">🎮</span>`}
+                    ${window._gabeMode
+                        ? `<img src="${window.GABE_URL}" class="thumb-img" alt="gabe">`
+                        : (g.thumb ? `<img src="${g.thumb}" class="thumb-img">` : `<span style="font-size:2rem; position:relative; z-index:2;">🎮</span>`)}
                     ${isFeatured ? featRibbon : ''}
                     ${isNew ? newSticker : ''}
                 </div>
@@ -1500,7 +1517,9 @@
             return `
             <div class="card-item ${isFeatured ? 'featured-card' : ''}">
                 <div class="thumb-box" style="font-size:3rem; position:relative; z-index:2;">
-                    ${g.thumb}
+                    ${window._gabeMode
+                        ? `<img src="${window.GABE_URL}" class="thumb-img" alt="gabe">`
+                        : g.thumb}
                     ${isFeatured ? featRibbon : ''}
                     ${isNew ? newSticker : ''}
                 </div>
