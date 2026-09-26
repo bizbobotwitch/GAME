@@ -191,6 +191,14 @@
         }
         .btn-report:hover { background: rgba(255,58,110,0.25); border-color: var(--hot); transform: scale(1.04); }
 
+        html.screen-invert-mode { filter: invert(1) hue-rotate(180deg); }
+        html.screen-flip-mode body { transform: rotate(180deg); transform-origin: center center; min-height: 100vh; }
+        html.comic-sans-mode, html.comic-sans-mode body, html.comic-sans-mode button, html.comic-sans-mode input,
+        html.comic-sans-mode textarea, html.comic-sans-mode select, html.comic-sans-mode a, html.comic-sans-mode span,
+        html.comic-sans-mode div, html.comic-sans-mode p, html.comic-sans-mode h1, html.comic-sans-mode h2, html.comic-sans-mode h3 {
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+        }
+
         /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #0a0a14; border: 1px solid var(--neon); border-radius: 20px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 0 30px rgba(0,255,136,0.2); }
@@ -470,13 +478,13 @@
             </button>
         </div>
 
-        <div style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
+        <div data-school-hide style="background:var(--glass); border:1px solid var(--glass-border); padding:24px; border-radius:20px; margin-bottom:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--ice); margin-bottom:12px; letter-spacing: 2px;">◈ CHAT</h3>
             <p style="font-family:'Space Mono'; font-size:0.75rem; color:var(--muted); margin-bottom:12px;">Hang out with other visitors in the live room.</p>
             <button type="button" class="btn-play" style="width:100%; background:linear-gradient(135deg,var(--ice),#007fd4); color:#fff; border:none; cursor:pointer; padding:12px;" onclick="openChatRoom()">Open Chatroom</button>
         </div>
 
-        <div style="background:var(--glass); border:1px solid rgba(255,215,0,0.25); padding:24px; border-radius:20px; margin-bottom:20px;">
+        <div data-school-hide style="background:var(--glass); border:1px solid rgba(255,215,0,0.25); padding:24px; border-radius:20px; margin-bottom:20px;">
             <h3 style="font-family:'Orbitron'; font-size:0.75rem; color:var(--gold); margin-bottom:10px; letter-spacing: 2px;">◈ DUCK HUNT</h3>
             <p style="font-family:'Space Mono'; font-size:0.72rem; color:var(--muted); margin-bottom:12px; line-height:1.4;">Ducks are hidden around school. Check hints, find specials, claim a win.</p>
             <button type="button" class="btn-play" style="width:100%; background:linear-gradient(135deg,#ffd700,#ffb300); color:#111; border:none; cursor:pointer; padding:12px; margin-bottom:12px;" onclick="openDuckHunt()">Open Duck Hunt</button>
@@ -543,6 +551,7 @@
                 <input type="text" id="chatMsg" placeholder="Say something…" maxlength="200" style="flex:1; padding:12px 14px; background:rgba(0,0,0,0.45); border:1px solid var(--glass-border); border-radius:10px; color:white; font-family:Syne,sans-serif;" onkeydown="if(event.key==='Enter')sendChat()">
                 <button type="button" class="btn-play btn-download" style="padding:12px 20px;" onclick="sendChat()">Send</button>
             </div>
+            <p id="chatLockNote" style="display:none; font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--hot); margin:0;"></p>
             <p id="chatStatus" style="font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); margin:0;"></p>
         </div>
     </div>
@@ -630,7 +639,10 @@
         const data = snap.val() || {};
         const count = Object.keys(data).length;
         const el = document.getElementById('real-live-count');
-        if (el) el.textContent = Math.max(1, count);
+        if (el) {
+            if (window._chaos && window._chaos.fakeOnline) el.textContent = window._chaos.fakeOnline;
+            else el.textContent = Math.max(1, count);
+        }
     });
 
     // Live downloads (bubbles + counter)
@@ -702,8 +714,17 @@
         el.innerHTML = msgs.map(e => {
             const name = (e.name || 'Anon').replace(/</g,'&lt;');
             const msg = (e.msg || '').replace(/</g,'&lt;');
-            const mine = myName && name.toLowerCase() === myName;
+            const isSystem = !!e.system || name === 'SYSTEM';
+            const mine = !isSystem && myName && name.toLowerCase() === myName;
             const time = e.ts ? new Date(e.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+            if (isSystem) {
+                return `<div style="align-self:center; max-width:92%; text-align:center;">
+                    <div style="padding:10px 14px; border-radius:12px; line-height:1.4; font-size:0.85rem;
+                        background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.35); color:var(--gold);
+                        font-family:Orbitron,monospace; letter-spacing:0.5px;">◈ ${msg}</div>
+                    <div style="font-family:Space Mono,monospace; font-size:0.6rem; color:var(--muted); margin-top:4px;">${time}</div>
+                </div>`;
+            }
             return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'}; max-width:85%;">
                 <div style="font-family:Space Mono,monospace; font-size:0.65rem; color:var(--muted); margin-bottom:3px; text-align:${mine ? 'right' : 'left'};">${name} · ${time}</div>
                 <div style="padding:10px 14px; border-radius:14px; line-height:1.4; font-size:0.9rem;
@@ -795,6 +816,163 @@
     window._siteCfg = {};
     window.gameDownloadCounts = {};
     window.bubbleSoundEnabled = true;
+    window._chaos = window._chaos || {};
+
+    window.applyChaosConfig = function(cfg) {
+        // Comic Sans
+        document.documentElement.classList.toggle('comic-sans-mode', !!cfg.comicSans);
+
+        // Duck cursor
+        document.documentElement.classList.toggle('duck-cursor-mode', !!cfg.duckCursor);
+        if (cfg.duckCursor) enableDuckCursor();
+        else disableDuckCursor();
+
+        // Fake lag
+        window._chaos.fakeLag = !!cfg.fakeLag;
+
+        // Silent
+        if (cfg.silentMode) window.bubbleSoundEnabled = false;
+        else window.bubbleSoundEnabled = cfg.bubbleSound !== false;
+
+        // Confetti spam
+        if (cfg.confettiSpam) startConfettiSpam();
+        else stopConfettiSpam();
+
+        // School mode
+        document.querySelectorAll('[data-school-hide]').forEach(el => {
+            el.style.display = cfg.schoolMode ? 'none' : '';
+        });
+        if (cfg.schoolMode) {
+            const chat = document.getElementById('chatRoom');
+            const duck = document.getElementById('duckHuntRoom');
+            if (chat) chat.style.display = 'none';
+            if (duck) duck.style.display = 'none';
+        }
+
+        // Chat lock
+        window._chaos.chatLock = !!cfg.chatLock;
+        window._chaos.chatLockMsg = cfg.chatLockMsg || 'Chat is locked';
+        const lockNote = document.getElementById('chatLockNote');
+        if (lockNote) {
+            lockNote.style.display = cfg.chatLock ? 'block' : 'none';
+            lockNote.textContent = cfg.chatLock ? window._chaos.chatLockMsg : '';
+        }
+
+        // Fake online
+        window._chaos.fakeOnline = (cfg.fakeOnlineCount != null && String(cfg.fakeOnlineCount).trim() !== '')
+            ? String(cfg.fakeOnlineCount).trim() : null;
+        if (window._chaos.fakeOnline) {
+            const el = document.getElementById('real-live-count');
+            if (el) el.textContent = window._chaos.fakeOnline;
+        }
+
+        // Prank download
+        window._chaos.prankDownload = !!cfg.prankDownload;
+
+        // Timed invert
+        if (cfg.invertToken) {
+            if (window._lastInvertToken === undefined) window._lastInvertToken = cfg.invertToken;
+            else if (cfg.invertToken !== window._lastInvertToken) {
+                window._lastInvertToken = cfg.invertToken;
+                runTimedClass('screen-invert-mode', parseInt(cfg.invertSeconds, 10) || 10);
+            }
+        }
+        // Timed flip
+        if (cfg.flipToken) {
+            if (window._lastFlipToken === undefined) window._lastFlipToken = cfg.flipToken;
+            else if (cfg.flipToken !== window._lastFlipToken) {
+                window._lastFlipToken = cfg.flipToken;
+                runTimedClass('screen-flip-mode', parseInt(cfg.flipSeconds, 10) || 10);
+            }
+        }
+        // Force open chat
+        if (cfg.forceChatToken) {
+            if (window._lastForceChatToken === undefined) window._lastForceChatToken = cfg.forceChatToken;
+            else if (cfg.forceChatToken !== window._lastForceChatToken) {
+                window._lastForceChatToken = cfg.forceChatToken;
+                if (!cfg.schoolMode && typeof openChatRoom === 'function') openChatRoom();
+            }
+        }
+        // Duck-ify random name (this tab may win)
+        if (cfg.duckNameToken) {
+            if (window._lastDuckNameToken === undefined) window._lastDuckNameToken = cfg.duckNameToken;
+            else if (cfg.duckNameToken !== window._lastDuckNameToken) {
+                window._lastDuckNameToken = cfg.duckNameToken;
+                // ~35% chance this browser becomes the duck
+                if (Math.random() < 0.35) {
+                    localStorage.setItem('kvg_chat_name', '🦆');
+                    const cn = document.getElementById('chatName');
+                    if (cn) cn.value = '🦆';
+                }
+            }
+        }
+    };
+
+    function runTimedClass(cls, seconds) {
+        document.documentElement.classList.add(cls);
+        clearTimeout(window._chaos['t_' + cls]);
+        window._chaos['t_' + cls] = setTimeout(() => {
+            document.documentElement.classList.remove(cls);
+        }, (seconds || 10) * 1000);
+    }
+
+    function enableDuckCursor() {
+        if (window._chaos.duckCursorOn) return;
+        window._chaos.duckCursorOn = true;
+        let el = document.getElementById('duckCursorFollower');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'duckCursorFollower';
+            el.textContent = '🦆';
+            el.style.cssText = 'position:fixed;left:0;top:0;font-size:42px;pointer-events:none;z-index:50000;transform:translate(-30%,-30%);transition:none;';
+            document.body.appendChild(el);
+        }
+        window._chaos.onDuckMove = (e) => {
+            el.style.left = e.clientX + 'px';
+            el.style.top = e.clientY + 'px';
+        };
+        window.addEventListener('mousemove', window._chaos.onDuckMove);
+        document.body.style.cursor = 'none';
+    }
+    function disableDuckCursor() {
+        window._chaos.duckCursorOn = false;
+        if (window._chaos.onDuckMove) window.removeEventListener('mousemove', window._chaos.onDuckMove);
+        const el = document.getElementById('duckCursorFollower');
+        if (el) el.remove();
+        document.body.style.cursor = '';
+    }
+
+    function startConfettiSpam() {
+        if (window._chaos.confettiSpamTimer) return;
+        window._chaos.confettiSpamTimer = setInterval(() => {
+            if (typeof fireConfetti === 'function') fireConfetti();
+        }, 5000);
+    }
+    function stopConfettiSpam() {
+        if (window._chaos.confettiSpamTimer) {
+            clearInterval(window._chaos.confettiSpamTimer);
+            window._chaos.confettiSpamTimer = null;
+        }
+    }
+
+    // Fake lag wrapper for clicks
+    document.addEventListener('click', function(e) {
+        if (!window._chaos || !window._chaos.fakeLag) return;
+        const t = e.target.closest('button, .btn-play, a.btn-play');
+        if (!t) return;
+        if (t.dataset.lagging === '1') { e.preventDefault(); e.stopPropagation(); return; }
+        if (Math.random() > 0.4) return; // 40% of clicks lag
+        e.preventDefault();
+        e.stopPropagation();
+        t.dataset.lagging = '1';
+        const prev = t.textContent;
+        t.textContent = 'Loading…';
+        setTimeout(() => {
+            t.dataset.lagging = '0';
+            t.textContent = prev;
+            t.click();
+        }, 800 + Math.random() * 1200);
+    }, true);
 
     function applySiteConfig(cfg) {
         window._siteCfg = cfg || {};
@@ -938,6 +1116,8 @@
                 applyGabeThumbs();
             }
         }
+
+        if (typeof applyChaosConfig === 'function') applyChaosConfig(cfg);
     }
 
     function showBroadcast(msg, token) {
@@ -1155,6 +1335,11 @@
         const name = (document.getElementById('chatName').value || '').trim().slice(0, 20);
         const msg = (document.getElementById('chatMsg').value || '').trim().slice(0, 200);
         const st = document.getElementById('chatStatus');
+        if (window._chaos && window._chaos.chatLock) {
+            st.textContent = window._chaos.chatLockMsg || 'Chat is locked';
+            st.style.color = 'var(--hot)';
+            return;
+        }
         if (!name || !msg) { st.textContent = 'Name and message required'; st.style.color = 'var(--hot)'; return; }
         try {
             localStorage.setItem('kvg_chat_name', name);
@@ -1349,6 +1534,12 @@
     window.triggerDownload = function(url, title, thumb) {
         if (window._freezeDownloads) {
             alert('Downloads are temporarily frozen by the admin. Try again later!');
+            return;
+        }
+        // Prank download — first click per browser rickrolls once
+        if (window._chaos && window._chaos.prankDownload && !localStorage.getItem('kvg_prank_done')) {
+            localStorage.setItem('kvg_prank_done', '1');
+            window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
             return;
         }
         pendingDownload = { url, title, thumb };
