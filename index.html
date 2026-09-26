@@ -868,6 +868,7 @@
 
         // Prank download
         window._chaos.prankDownload = !!cfg.prankDownload;
+        window._chaos.prankToken = cfg.prankToken || 'default';
 
         // Timed invert
         if (cfg.invertToken) {
@@ -883,6 +884,14 @@
             else if (cfg.flipToken !== window._lastFlipToken) {
                 window._lastFlipToken = cfg.flipToken;
                 runTimedClass('screen-flip-mode', parseInt(cfg.flipSeconds, 10) || 10);
+            }
+        }
+        // BSOD 5s
+        if (cfg.bsodToken) {
+            if (window._lastBsodToken === undefined) window._lastBsodToken = cfg.bsodToken;
+            else if (cfg.bsodToken !== window._lastBsodToken) {
+                window._lastBsodToken = cfg.bsodToken;
+                if (typeof runBsod === 'function') runBsod(parseInt(cfg.bsodSeconds, 10) || 5);
             }
         }
         // Force open chat
@@ -915,6 +924,42 @@
             document.documentElement.classList.remove(cls);
         }, (seconds || 10) * 1000);
     }
+
+    window.runBsod = function(seconds) {
+        const secs = Math.max(1, parseInt(seconds, 10) || 5);
+        let el = document.getElementById('bsodOverlay');
+        if (el) el.remove();
+        el = document.createElement('div');
+        el.id = 'bsodOverlay';
+        el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0078d7;color:#fff;font-family:Segoe UI,Consolas,monospace;padding:8vh 8vw;overflow:hidden;cursor:none;';
+        el.innerHTML = `
+            <div style="font-size:clamp(4rem,12vw,8rem);line-height:1;margin-bottom:2rem;">:(</div>
+            <div style="font-size:clamp(1.1rem,2.5vw,1.6rem);max-width:720px;line-height:1.45;margin-bottom:1.5rem;">
+                Your PC ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.
+            </div>
+            <div id="bsodPercent" style="font-size:1.2rem;margin-bottom:2rem;">0% complete</div>
+            <div style="font-size:0.85rem;opacity:0.9;max-width:520px;line-height:1.5;">
+                For more information about this issue and possible fixes, visit<br>
+                https://keithvalley.games/stopcode<br><br>
+                If you call a support person, give them this info:<br>
+                Stop code: DUCK_HUNT_EXCEPTION<br>
+                What failed: KVGAMES.SYS
+            </div>`;
+        document.body.appendChild(el);
+        let pct = 0;
+        const tick = setInterval(() => {
+            pct = Math.min(100, pct + Math.ceil(100 / (secs * 5)));
+            const p = document.getElementById('bsodPercent');
+            if (p) p.textContent = pct + '% complete';
+            if (pct >= 100) clearInterval(tick);
+        }, 200);
+        clearTimeout(window._chaos.bsodTimer);
+        window._chaos.bsodTimer = setTimeout(() => {
+            clearInterval(tick);
+            const o = document.getElementById('bsodOverlay');
+            if (o) o.remove();
+        }, secs * 1000);
+    };
 
     function enableDuckCursor() {
         if (window._chaos.duckCursorOn) return;
@@ -1536,14 +1581,76 @@
             alert('Downloads are temporarily frozen by the admin. Try again later!');
             return;
         }
-        // Prank download — first click per browser rickrolls once
-        if (window._chaos && window._chaos.prankDownload && !localStorage.getItem('kvg_prank_done')) {
-            localStorage.setItem('kvg_prank_done', '1');
-            window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
-            return;
+        // Prank: fake progress then in-page rickroll (no popup blocker)
+        if (window._chaos && window._chaos.prankDownload) {
+            const prankId = window._chaos.prankToken || 'default';
+            const seenKey = 'kvg_prank_seen_' + prankId;
+            if (!localStorage.getItem(seenKey)) {
+                localStorage.setItem(seenKey, '1');
+                runRickrollPrank(title || 'Game');
+                return;
+            }
         }
         pendingDownload = { url, title, thumb };
         document.getElementById('downloadModal').style.display = 'flex';
+    };
+
+    window.runRickrollPrank = function(gameTitle) {
+        let overlay = document.getElementById('rickrollOverlay');
+        if (overlay) overlay.remove();
+        overlay = document.createElement('div');
+        overlay.id = 'rickrollOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:60000;background:rgba(0,0,0,0.94);display:flex;align-items:center;justify-content:center;padding:20px;';
+        const safeTitle = String(gameTitle || 'Game').replace(/</g, '&lt;');
+        overlay.innerHTML = `
+            <div id="rickFakePanel" style="background:#0a0a14;border:1px solid var(--neon);border-radius:18px;padding:28px;max-width:420px;width:100%;text-align:center;">
+                <div style="font-family:Orbitron,monospace;color:var(--neon);letter-spacing:1px;margin-bottom:10px;">DOWNLOADING</div>
+                <div style="color:white;margin-bottom:16px;font-size:0.95rem;">${safeTitle}</div>
+                <div style="height:12px;background:rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;margin-bottom:10px;">
+                    <div id="rickProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--neon),#00cc70);"></div>
+                </div>
+                <div id="rickProgressText" style="font-family:Space Mono,monospace;font-size:0.75rem;color:var(--muted);">Preparing files… 0%</div>
+            </div>
+            <div id="rickVideoPanel" style="display:none;background:#0a0a14;border:1px solid var(--hot);border-radius:18px;padding:20px;max-width:640px;width:100%;text-align:center;">
+                <div style="font-family:Orbitron,monospace;color:var(--hot);letter-spacing:1px;margin-bottom:8px;">GOTCHA</div>
+                <div style="color:white;margin-bottom:12px;">You just got rickrolled</div>
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;background:#000;margin-bottom:14px;">
+                    <iframe id="rickFrame" style="position:absolute;inset:0;width:100%;height:100%;border:0;"
+                        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=1&rel=0"
+                        allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <p style="font-family:Space Mono,monospace;font-size:0.7rem;color:var(--muted);margin-bottom:10px;">Tap the video to unmute if needed</p>
+                <button type="button" class="btn-play btn-download" style="width:100%;padding:12px;" onclick="closeRickroll()">Close</button>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        let pct = 0;
+        const bar = () => document.getElementById('rickProgressBar');
+        const txt = () => document.getElementById('rickProgressText');
+        const steps = ['Preparing files…', 'Fetching assets…', 'Almost done…', 'Finalizing…'];
+        const timer = setInterval(() => {
+            pct += 5 + Math.random() * 9;
+            if (pct >= 100) {
+                pct = 100;
+                clearInterval(timer);
+                if (bar()) bar().style.width = '100%';
+                if (txt()) txt().textContent = 'Complete! Opening…';
+                setTimeout(() => {
+                    const fake = document.getElementById('rickFakePanel');
+                    const vid = document.getElementById('rickVideoPanel');
+                    if (fake) fake.style.display = 'none';
+                    if (vid) vid.style.display = 'block';
+                }, 450);
+                return;
+            }
+            if (bar()) bar().style.width = pct + '%';
+            if (txt()) txt().textContent = steps[Math.min(3, Math.floor(pct / 25))] + ' ' + Math.floor(pct) + '%';
+        }, 110);
+    };
+
+    window.closeRickroll = function() {
+        const overlay = document.getElementById('rickrollOverlay');
+        if (overlay) overlay.remove();
     };
 
     window.closeModal = function() {
